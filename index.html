@@ -10,7 +10,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
   body { margin: 0; }
@@ -20,12 +20,13 @@
 <body>
 <div id="root"></div>
 <script>
-  // エラー時に真っ白にならないための保険(原因調査用)
+  // エラー時に真っ白にならないための保険(原因調査用) build v3
   window.addEventListener("error", function (e) {
     var root = document.getElementById("root");
     if (root && !root.hasChildNodes()) {
-      root.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#B0483C;font-size:14px;">読み込みエラーが発生しました:<br><code style="font-size:12px;">' +
-        String(e.message || e.error || "unknown").replace(/</g, "&lt;") + '</code><br><br>ページを再読み込みしてもこの表示が出る場合は、この画面のスクリーンショットを開発者へお送りください。</div>';
+      var src = e.filename ? ("<br>発生元: <code style='font-size:12px;'>" + String(e.filename).replace(/</g, "&lt;") + " (line " + e.lineno + ")</code>") : "";
+      root.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#B0483C;font-size:14px;">[build v3] 読み込みエラーが発生しました:<br><code style="font-size:12px;">' +
+        String(e.message || e.error || "unknown").replace(/</g, "&lt;") + '</code>' + src + '<br><br>ページを再読み込みしてもこの表示が出る場合は、この画面のスクリーンショットを開発者へお送りください。</div>';
     }
   });
 </script>
