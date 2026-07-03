@@ -90,17 +90,28 @@
   .transition-opacity { transition: opacity 0.15s ease; }
   .active\:opacity-60:active { opacity: 0.6; }
   .active\:opacity-70:active { opacity: 0.7; }
+
+  /* ---- カレンダー表示サイズ(スマホ基準→PCで拡大) ---- */
+  .cal-day { min-height: 52px; }
+  .cal-num { font-size: 0.875rem; line-height: 1.25rem; }
+  .cal-mark { font-size: 1rem; }
+  @media (min-width: 768px) {
+    .max-w-md { max-width: 40rem; }
+    .cal-day { min-height: 78px; }
+    .cal-num { font-size: 1.1rem; }
+    .cal-mark { font-size: 1.25rem; }
+  }
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script>
-  // エラー時に真っ白にならないための保険(原因調査用) build v5
+  // エラー時に真っ白にならないための保険(原因調査用) build v6
   window.addEventListener("error", function (e) {
     var root = document.getElementById("root");
     if (root && !root.hasChildNodes()) {
       var src = e.filename ? ("<br>発生元: <code style='font-size:12px;'>" + String(e.filename).replace(/</g, "&lt;") + " (line " + e.lineno + ")</code>") : "";
-      root.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#B0483C;font-size:14px;">[build v5] 読み込みエラーが発生しました:<br><code style="font-size:12px;">' +
+      root.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#B0483C;font-size:14px;">[build v6] 読み込みエラーが発生しました:<br><code style="font-size:12px;">' +
         String(e.message || e.error || "unknown").replace(/</g, "&lt;") + '</code>' + src + '<br><br>ページを再読み込みしてもこの表示が出る場合は、この画面のスクリーンショットを開発者へお送りください。</div>';
     }
   });
@@ -116,7 +127,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ================= 設定 =================
 const CLINIC_NAME = "みなとクリニック";
 const CLINIC_NAME_EN = "MINATO CLINIC";
-const SLOT_TIMES = ["13:00", "13:30"];
+const SLOT_TIMES = ["13:00", "13:30", "14:00"];
 const C = {
     bg: "#F6FAFC",
     bgAdmin: "#EFF5F8",
@@ -182,7 +193,7 @@ const TR = {
         th: "แตะวันที่มีเครื่องหมาย ○ (เวลา 13:00–14:00)",
     },
     legendOpen: { ja: "○ 空きあり", en: "○ Available", zh: "○ 可预约", pt: "○ Disponível", es: "○ Disponible", th: "○ ว่าง" },
-    legendFull: { ja: "満 予約済み", en: "✕ Fully booked", zh: "满 已约满", pt: "✕ Esgotado", es: "✕ Completo", th: "✕ เต็ม" },
+    legendFull: { ja: "満 満枠(要相談)", en: "✕ Full (inquiry OK)", zh: "满 已满(可咨询)", pt: "✕ Lotado (consulte)", es: "✕ Completo (consultar)", th: "✕ เต็ม (สอบถามได้)" },
     legendClosed: { ja: "− 受付なし", en: "− Closed", zh: "− 不受理", pt: "− Fechado", es: "− Cerrado", th: "− ปิดรับ" },
     chooseTime: { ja: "ご希望の時間をお選びください", en: "Please choose a time", zh: "请选择时间", pt: "Escolha um horário", es: "Elija una hora", th: "กรุณาเลือกเวลา" },
     backToDate: { ja: "← 日付選択に戻る", en: "← Back to dates", zh: "← 返回选择日期", pt: "← Voltar às datas", es: "← Volver a fechas", th: "← กลับไปเลือกวันที่" },
@@ -317,6 +328,37 @@ const TR = {
         th: "กรุณานำบัตรผู้ป่วยมาด้วย",
     },
     staffLink: { ja: "スタッフの方はこちら", en: "Staff login", zh: "员工入口", pt: "Acesso da equipe", es: "Acceso del personal", th: "สำหรับเจ้าหน้าที่" },
+    formTitle: { ja: "ご予約", en: "Reservation", zh: "预约", pt: "Reserva", es: "Reserva", th: "การจอง" },
+    treatmentLabel: { ja: "施術内容", en: "Treatment", zh: "施术项目", pt: "Tratamento", es: "Tratamiento", th: "รายการ" },
+    otherTab: { ja: "その他", en: "Other", zh: "其他", pt: "Outro", es: "Otro", th: "อื่นๆ" },
+    otherPh: { ja: "例: くまとり", en: "e.g. under-eye treatment", zh: "例: 去黑眼圈", pt: "ex.: olheiras", es: "ej.: ojeras", th: "เช่น แก้ไขใต้ตา" },
+    errTreatment: { ja: "ご希望の施術内容を入力してください", en: "Please enter the treatment you would like", zh: "请输入希望的施术项目", pt: "Informe o tratamento desejado", es: "Indique el tratamiento deseado", th: "กรุณากรอกรายการที่ต้องการ" },
+    consultInfo: {
+        ja: "この日は予約枠が埋まっています。「要相談」として送信いただくと、クリニックよりお電話で折り返しご連絡いたします。",
+        en: "This date is fully booked. Submit an inquiry and the clinic will call you back.",
+        zh: "该日期已约满。提交咨询后,诊所将致电与您联系。",
+        pt: "Esta data está lotada. Envie uma consulta e a clínica retornará por telefone.",
+        es: "Esta fecha está completa. Envíe una consulta y la clínica le llamará.",
+        th: "วันนี้เต็มแล้ว ส่งคำขอปรึกษาแล้วคลินิกจะโทรกลับ",
+    },
+    consultBtn: { ja: "要相談として送信する", en: "Submit inquiry", zh: "提交咨询", pt: "Enviar consulta", es: "Enviar consulta", th: "ส่งคำขอปรึกษา" },
+    consultDoneTitle: { ja: "ご相談を受け付けました", en: "Inquiry Received", zh: "已收到咨询", pt: "Consulta Recebida", es: "Consulta Recibida", th: "ได้รับคำขอแล้ว" },
+    consultDoneNote: {
+        ja: "内容を確認のうえ、クリニックよりお電話にてご連絡いたします。",
+        en: "The clinic will contact you by phone.",
+        zh: "确认后,诊所将致电与您联系。",
+        pt: "A clínica entrará em contato por telefone.",
+        es: "La clínica se pondrá en contacto por teléfono.",
+        th: "คลินิกจะติดต่อกลับทางโทรศัพท์",
+    },
+    errConsultDup: {
+        ja: "同じ日に同じ診察券番号でのご相談を既に受け付けています。クリニックからのご連絡をお待ちください。",
+        en: "An inquiry for this date has already been received. Please wait for our call.",
+        zh: "该日期已收到相同诊察券号码的咨询。请等待诊所联系。",
+        pt: "Já recebemos uma consulta para esta data. Aguarde nosso contato.",
+        es: "Ya recibimos una consulta para esta fecha. Espere nuestra llamada.",
+        th: "ได้รับคำขอสำหรับวันนี้แล้ว กรุณารอการติดต่อกลับ",
+    },
 };
 // ================= 日付ユーティリティ =================
 const pad = (n) => String(n).padStart(2, "0");
@@ -435,14 +477,17 @@ function App() {
         setLoading(true);
         setError("");
         try {
-            const [csRes, bkRes] = await Promise.all([
+            const [csRes, bkRes, coRes] = await Promise.all([
                 sb.from("closed_slots").select("date, time"),
                 sb.from("bookings").select("*").order("date"),
+                sb.from("consultations").select("*").order("created_at", { ascending: false }),
             ]);
             if (csRes.error)
                 throw csRes.error;
             if (bkRes.error)
                 throw bkRes.error;
+            if (coRes.error)
+                throw coRes.error;
             const cs = {};
             (csRes.data || []).forEach((r) => {
                 if (!cs[r.date])
@@ -456,9 +501,15 @@ function App() {
                     date: r.date, time: r.time, name: r.name,
                     clinicId: r.clinic_id, phone: r.phone,
                     bookingNo: r.booking_no, lang: r.lang,
+                    treatment: r.treatment || "糸リフト",
                 };
             });
             setBookings(bk);
+            setConsults((coRes.data || []).map((r) => ({
+                id: r.id, date: r.date, name: r.name,
+                clinicId: r.clinic_id, phone: r.phone,
+                treatment: r.treatment || "糸リフト", lang: r.lang,
+            })));
         }
         catch (e) {
             setError("データの読み込みに失敗しました。再読み込みしてください。");
@@ -508,6 +559,12 @@ function App() {
     const [lookupForm, setLookupForm] = useState({ clinicId: "", phone: "" });
     const [myBookings, setMyBookings] = useState(null);
     const [lookupBusy, setLookupBusy] = useState(false);
+    const [treatType, setTreatType] = useState("thread"); // thread | other
+    const [treatText, setTreatText] = useState("");
+    const [isConsult, setIsConsult] = useState(false);
+    // 選択中の施術内容(表示用は言語対応、保存用は日本語/入力そのまま)
+    const treatDisplay = () => (treatType === "thread" ? t("treatment") : treatText.trim());
+    const treatStore = () => (treatType === "thread" ? "糸リフト" : treatText.trim());
     function dayStatus(dateStr, dow) {
         if (dow === 0)
             return "closed";
@@ -536,6 +593,8 @@ function App() {
         const digits = form.phone.replace(/[^0-9]/g, "");
         if (digits.length < 10 || digits.length > 15)
             e.phone = t("errPhone");
+        if (treatType === "other" && !treatText.trim())
+            e.treatment = t("errTreatment");
         setFormErr(e);
         return Object.keys(e).length === 0;
     }
@@ -550,6 +609,7 @@ function App() {
                 p_clinic_id: form.clinicId.trim(),
                 p_phone: form.phone.trim(),
                 p_lang: lang,
+                p_treatment: treatStore(),
             });
             if (err)
                 throw err;
@@ -564,6 +624,34 @@ function App() {
             }
             setBookingNo(data.booking_no);
             setBookedDates((prev) => new Set([...prev, selDate]));
+            setPScreen("done");
+        }
+        catch (e) {
+            console.error(e);
+            setError(t("errSave"));
+        }
+        setSubmitting(false);
+    }
+    async function submitConsult() {
+        setSubmitting(true);
+        setError("");
+        try {
+            const { data, error: err } = await sb.rpc("create_consultation", {
+                p_date: selDate,
+                p_name: form.name.trim(),
+                p_clinic_id: form.clinicId.trim(),
+                p_phone: form.phone.trim(),
+                p_treatment: treatStore(),
+                p_lang: lang,
+            });
+            if (err)
+                throw err;
+            if (!data.ok) {
+                setError(data.error === "duplicate" ? t("errConsultDup") : t(ERR_KEY[data.error] || "errSave"));
+                setSubmitting(false);
+                return;
+            }
+            setBookingNo("");
             setPScreen("done");
         }
         catch (e) {
@@ -699,15 +787,26 @@ function App() {
             renderCalendarGrid(pMonthIdx, (dateStr, d, dow) => {
                 const st = dayStatus(dateStr, dow);
                 const tappable = st === "open";
+                const consultable = st === "full";
                 const fullMark = lang === "ja" || lang === "zh" ? "満" : "✕";
-                return (React.createElement("button", { key: dateStr, disabled: !tappable, onClick: () => { setSelDate(dateStr); setSelTime(null); setPScreen("time"); }, className: "rounded-lg flex flex-col items-center justify-center py-1.5 active:opacity-60", style: {
-                        minHeight: "52px",
-                        background: tappable ? C.primarySoft : "transparent",
-                        border: tappable ? `1.5px solid ${C.primary}` : "1.5px solid transparent",
-                        cursor: tappable ? "pointer" : "default",
+                return (React.createElement("button", { key: dateStr, disabled: !tappable && !consultable, onClick: () => {
+                        setSelDate(dateStr);
+                        setSelTime(null);
+                        if (consultable) {
+                            setIsConsult(true);
+                            setPScreen("form");
+                        }
+                        else {
+                            setIsConsult(false);
+                            setPScreen("time");
+                        }
+                    }, className: "cal-day rounded-lg flex flex-col items-center justify-center py-1.5 active:opacity-60", style: {
+                        background: tappable ? C.primarySoft : consultable ? C.goldSoft : "transparent",
+                        border: tappable ? `1.5px solid ${C.primary}` : consultable ? `1.5px solid ${C.gold}` : "1.5px solid transparent",
+                        cursor: tappable || consultable ? "pointer" : "default",
                     } },
-                    React.createElement("span", { className: "text-sm", style: { color: st === "past" || st === "closed" ? "#B4C8D2" : dow === 0 ? C.danger : C.ink, fontWeight: 600 } }, d),
-                    React.createElement("span", { className: "text-base leading-none mt-0.5", style: { color: tappable ? C.primary : st === "full" ? C.gold : "#B4C8D2", fontWeight: 700 } }, st === "open" ? "○" : st === "full" ? fullMark : "−")));
+                    React.createElement("span", { className: "cal-num", style: { color: st === "past" || st === "closed" ? "#B4C8D2" : dow === 0 ? C.danger : C.ink, fontWeight: 600 } }, d),
+                    React.createElement("span", { className: "cal-mark leading-none mt-0.5", style: { color: tappable ? C.primary : consultable ? C.gold : "#B4C8D2", fontWeight: 700 } }, st === "open" ? "○" : st === "full" ? fullMark : "−")));
             }),
             React.createElement("div", { className: "flex gap-4 justify-center mt-3 text-xs flex-wrap", style: { color: C.sub } },
                 React.createElement("span", null, t("legendOpen")),
@@ -741,10 +840,20 @@ function App() {
             React.createElement("div", { className: "text-center mb-4" },
                 React.createElement("p", { className: "text-base", style: { fontFamily: fontDisplay, color: C.ink } },
                     localDate(selDate, lang),
-                    " ",
-                    selTime,
-                    "\u301C ",
-                    t("treatment"))),
+                    isConsult ? "" : ` ${selTime}〜`)),
+            isConsult && (React.createElement("div", { className: "rounded-xl px-4 py-3 mb-4", style: { background: C.goldSoft, border: `1.5px solid ${C.gold}` } },
+                React.createElement("p", { className: "text-sm leading-relaxed", style: { color: C.gold, fontWeight: 600 } }, t("consultInfo")))),
+            React.createElement("div", { className: "mb-4" },
+                React.createElement("label", { className: "text-sm block mb-1.5", style: { color: C.ink, fontWeight: 600 } }, t("treatmentLabel")),
+                React.createElement("div", { className: "flex rounded-xl overflow-hidden", style: { border: `1.5px solid ${C.line}` } }, [["thread", t("treatment")], ["other", t("otherTab")]].map(([k, label]) => (React.createElement("button", { key: k, onClick: () => setTreatType(k), className: "flex-1 py-2.5 text-sm", style: {
+                        fontWeight: 600,
+                        background: treatType === k ? C.primary : C.card,
+                        color: treatType === k ? "#fff" : C.sub,
+                        cursor: "pointer",
+                    } }, label)))),
+                treatType === "other" && (React.createElement("div", { className: "mt-2" },
+                    React.createElement("input", { value: treatText, onChange: (e) => setTreatText(e.target.value), placeholder: t("otherPh"), className: "w-full px-4 py-3 rounded-xl text-base outline-none", style: { fontFamily: fontBody, background: C.card, color: C.ink, border: `1.5px solid ${formErr.treatment ? C.danger : C.line}` } }),
+                    formErr.treatment && React.createElement("p", { className: "text-xs mt-1", style: { color: C.danger } }, formErr.treatment)))),
             React.createElement("div", { className: "flex flex-col gap-4" }, fields.map((f) => (React.createElement("div", { key: f.key },
                 React.createElement("label", { className: "text-sm block mb-1.5", style: { color: C.ink, fontWeight: 600 } }, f.label),
                 React.createElement("input", { type: f.type, inputMode: f.mode, value: form[f.key], onChange: (e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value })), placeholder: f.ph, className: "w-full px-4 py-3 rounded-xl text-base outline-none box-border", style: { fontFamily: fontBody, background: C.card, color: C.ink, border: `1.5px solid ${formErr[f.key] ? C.danger : C.line}`, boxSizing: "border-box" } }),
@@ -752,28 +861,52 @@ function App() {
             React.createElement("div", { className: "mt-6 flex flex-col gap-3" },
                 React.createElement(Btn, { onClick: () => { if (validateForm())
                         setPScreen("confirm"); } }, t("toConfirm")),
-                React.createElement(Btn, { variant: "ghost", onClick: () => setPScreen("time") }, t("backToTime")))));
+                React.createElement(Btn, { variant: "ghost", onClick: () => setPScreen(isConsult ? "calendar" : "time") }, isConsult ? t("backToDate") : t("backToTime")))));
     }
     function PatientConfirm() {
         const rows = [
-            [t("rowDate"), `${localDate(selDate, lang)} ${selTime}〜`],
-            [t("rowContent"), t("treatment")],
+            [t("rowDate"), isConsult ? localDate(selDate, lang) : `${localDate(selDate, lang)} ${selTime}〜`],
+            [t("rowContent"), treatDisplay()],
             [t("rowName"), form.name],
             [t("rowId"), form.clinicId],
             [t("rowPhone"), form.phone],
         ];
         return (React.createElement("div", null,
             React.createElement(StepDots, { step: 3 }),
-            React.createElement("p", { className: "text-center text-sm mb-4", style: { color: C.sub } }, t("confirmLead")),
+            isConsult ? (React.createElement("div", { className: "rounded-xl px-4 py-3 mb-4 text-center", style: { background: C.goldSoft, border: `1.5px solid ${C.gold}` } },
+                React.createElement("p", { className: "text-sm leading-relaxed", style: { color: C.gold, fontWeight: 700 } }, t("consultInfo")))) : (React.createElement("p", { className: "text-center text-sm mb-4", style: { color: C.sub } }, t("confirmLead"))),
             React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { background: C.card, border: `1px solid ${C.line}` } }, rows.map(([k, v], i) => (React.createElement("div", { key: i, className: "flex px-4 py-3.5", style: { borderTop: i === 0 ? "none" : `1px solid ${C.line}` } },
                 React.createElement("span", { className: "text-sm w-28 shrink-0", style: { color: C.sub } }, k),
                 React.createElement("span", { className: "text-sm", style: { color: C.ink, fontWeight: 600 } }, v))))),
             error && React.createElement("p", { className: "text-sm mt-3", style: { color: C.danger } }, error),
             React.createElement("div", { className: "mt-6 flex flex-col gap-3" },
-                React.createElement(Btn, { onClick: submitBooking, disabled: submitting }, submitting ? t("submitting") : t("confirmBtn")),
+                React.createElement(Btn, { onClick: isConsult ? submitConsult : submitBooking, disabled: submitting }, submitting ? t("submitting") : isConsult ? t("consultBtn") : t("confirmBtn")),
                 React.createElement(Btn, { variant: "ghost", onClick: () => setPScreen("form"), disabled: submitting }, t("backToForm")))));
     }
     function PatientDone() {
+        const resetAll = () => {
+            setForm({ name: "", clinicId: "", phone: "" });
+            setSelDate(null);
+            setSelTime(null);
+            setTreatType("thread");
+            setTreatText("");
+            setIsConsult(false);
+            setPScreen("landing");
+            loadPublic();
+        };
+        if (isConsult) {
+            return (React.createElement("div", { className: "text-center" },
+                React.createElement("div", { className: "w-14 h-14 rounded-full mx-auto mt-2 mb-4 flex items-center justify-center", style: { background: C.goldSoft } },
+                    React.createElement("span", { style: { color: C.gold, fontSize: "26px" } }, "\u2709")),
+                React.createElement("h2", { className: "text-xl mb-1", style: { fontFamily: fontDisplay, color: C.ink } }, t("consultDoneTitle")),
+                React.createElement("p", { className: "text-sm mb-5", style: { color: C.sub } },
+                    localDate(selDate, lang),
+                    " / ",
+                    treatDisplay()),
+                React.createElement("div", { className: "rounded-xl px-4 py-3 mb-5 text-left", style: { background: C.goldSoft, border: `1px solid ${C.gold}` } },
+                    React.createElement("p", { className: "text-sm leading-relaxed", style: { color: C.gold, fontWeight: 600 } }, t("consultDoneNote"))),
+                React.createElement(Btn, { variant: "outline", onClick: resetAll }, t("backToTop"))));
+        }
         return (React.createElement("div", { className: "text-center" },
             React.createElement("div", { className: "w-14 h-14 rounded-full mx-auto mt-2 mb-4 flex items-center justify-center", style: { background: C.goldSoft } },
                 React.createElement("span", { style: { color: C.gold, fontSize: "26px" } }, "\u2713")),
@@ -783,24 +916,18 @@ function App() {
                 " ",
                 selTime,
                 "\u301C ",
-                t("treatment")),
+                treatDisplay()),
             React.createElement("div", { className: "rounded-2xl py-4 mb-5", style: { background: C.card, border: `1px solid ${C.line}` } },
                 React.createElement("p", { className: "text-xs mb-1", style: { color: C.sub } }, t("bookingNoLabel")),
                 React.createElement("p", { className: "text-2xl tracking-widest", style: { fontFamily: fontDisplay, color: C.primary, fontWeight: 700 } }, bookingNo)),
             React.createElement("div", { className: "flex flex-col gap-3" },
                 React.createElement("a", { href: gcalUrl({
                         date: selDate, time: selTime,
-                        title: `${CLINIC_NAME} ${t("treatment")}`,
+                        title: `${CLINIC_NAME} ${treatDisplay()}`,
                         details: `${t("bookingNoLabel")}: ${bookingNo}\n${t("gcalNote")}`,
                     }), target: "_blank", rel: "noopener noreferrer", className: "block", style: { textDecoration: "none" } },
                     React.createElement(Btn, { onClick: () => { } }, t("addCal"))),
-                React.createElement(Btn, { variant: "outline", onClick: () => {
-                        setForm({ name: "", clinicId: "", phone: "" });
-                        setSelDate(null);
-                        setSelTime(null);
-                        setPScreen("landing");
-                        loadPublic();
-                    } }, t("backToTop"))),
+                React.createElement(Btn, { variant: "outline", onClick: resetAll }, t("backToTop"))),
             React.createElement("div", { className: "rounded-xl px-4 py-3 mt-5 text-left", style: { background: C.goldSoft, border: `1px solid ${C.gold}` } },
                 React.createElement("p", { className: "text-sm leading-relaxed", style: { color: C.gold, fontWeight: 600 } }, t("cancelNote")))));
     }
@@ -843,6 +970,22 @@ function App() {
     const [bulkMode, setBulkMode] = useState(false);
     const [bulkSel, setBulkSel] = useState([]);
     const [aListMode, setAListMode] = useState("future");
+    const [consults, setConsults] = useState([]);
+    async function resolveConsult(rec) {
+        if (!window.confirm(`${jp(rec.date)} ${rec.name} 様のご相談を対応済みにして削除しますか?`))
+            return;
+        try {
+            const { error: err } = await sb.from("consultations").delete().eq("id", rec.id);
+            if (err)
+                throw err;
+            setConsults((prev) => prev.filter((c) => c.id !== rec.id));
+            flash(`${rec.name} 様のご相談を対応済みにしました`);
+        }
+        catch (e) {
+            console.error(e);
+            setError("ご相談の削除に失敗しました。");
+        }
+    }
     const jp = (dateStr) => localDate(dateStr, "ja");
     const langLabel = (code) => (LANGS.find((l) => l.code === code) || {}).label || code;
     async function doLogin() {
@@ -1009,7 +1152,8 @@ function App() {
                         " \u69D8",
                         booked.lang && booked.lang !== "ja" && (React.createElement("span", { className: "ml-2 text-xs px-1.5 py-0.5 rounded", style: { background: C.primarySoft, color: C.primary } }, langLabel(booked.lang)))),
                     React.createElement("p", { className: "text-xs", style: { color: C.sub } },
-                        "\u8A3A\u5BDF\u5238: ",
+                        booked.treatment,
+                        " / \u8A3A\u5BDF\u5238: ",
                         booked.clinicId,
                         " / \u643A\u5E2F: ",
                         booked.phone,
@@ -1018,7 +1162,7 @@ function App() {
                         booked.bookingNo)),
                 React.createElement("a", { href: gcalUrl({
                         date: booked.date, time: booked.time,
-                        title: `【糸リフト】${booked.name} 様`,
+                        title: `【${booked.treatment}】${booked.name} 様`,
                         details: `予約番号: ${booked.bookingNo}\n診察券番号: ${booked.clinicId}\n携帯: ${booked.phone}\n(${CLINIC_NAME} 予約システムより)`,
                     }), target: "_blank", rel: "noopener noreferrer", className: "block mb-2", style: { textDecoration: "none" } },
                     React.createElement(Btn, { onClick: () => { } }, "\uD83D\uDCC5 Google\u30AB\u30EC\u30F3\u30C0\u30FC\u306B\u8FFD\u52A0")),
@@ -1083,15 +1227,14 @@ function App() {
                         else {
                             setASelDate(isSel ? null : dateStr);
                         }
-                    }, className: "rounded-lg flex flex-col items-center justify-center py-1.5", style: {
-                        minHeight: "50px",
+                    }, className: "cal-day rounded-lg flex flex-col items-center justify-center py-1.5", style: {
                         background: bulkMode ? (isBulkSel ? C.dangerSoft : "transparent") : (isSel ? C.primarySoft : booked ? C.goldSoft : "transparent"),
                         border: bulkMode ? (isBulkSel ? `1.5px solid ${C.danger}` : "1.5px solid transparent") : (isSel ? `1.5px solid ${C.primary}` : "1.5px solid transparent"),
                         opacity: bulkMode && booked ? 0.35 : 1,
                         cursor: disabled ? "default" : "pointer",
                     } },
-                    React.createElement("span", { className: "text-sm", style: { color: isSun || isPast ? "#B4C8D2" : C.ink, fontWeight: 600 } }, d),
-                    React.createElement("span", { className: "text-sm leading-none mt-0.5", style: { color: markColor, fontWeight: 700 } }, mark)));
+                    React.createElement("span", { className: "cal-num", style: { color: isSun || isPast ? "#B4C8D2" : C.ink, fontWeight: 600 } }, d),
+                    React.createElement("span", { className: "cal-mark leading-none mt-0.5", style: { color: markColor, fontWeight: 700 } }, mark)));
             }, "ja"),
             React.createElement("div", { className: "flex gap-3 justify-center mt-2 text-xs flex-wrap", style: { color: C.sub } },
                 React.createElement("span", null, "\u25CB \u53D7\u4ED8\u4E2D"),
@@ -1128,6 +1271,25 @@ function App() {
                         b.phone,
                         " / \u8A3A\u5BDF\u5238 ",
                         b.clinicId)))))),
+            consults.length > 0 && (React.createElement("div", { className: "rounded-2xl p-4 mb-4", style: { background: C.card, border: `1.5px solid ${C.gold}` } },
+                React.createElement("p", { className: "text-sm mb-3", style: { color: C.gold, fontWeight: 700 } },
+                    "\uD83D\uDCDE \u8981\u76F8\u8AC7(",
+                    consults.length,
+                    "\u4EF6)\u2014 \u6298\u308A\u8FD4\u3057\u306E\u304A\u96FB\u8A71\u3092"),
+                consults.map((c) => (React.createElement("div", { key: c.id, className: "rounded-xl p-3 mb-2", style: { background: C.goldSoft } },
+                    React.createElement("p", { className: "text-sm", style: { color: C.ink, fontWeight: 700 } },
+                        jp(c.date),
+                        " \u5E0C\u671B / ",
+                        c.name,
+                        " \u69D8",
+                        c.lang && c.lang !== "ja" && (React.createElement("span", { className: "ml-2 text-xs px-1.5 py-0.5 rounded", style: { background: C.primarySoft, color: C.primary } }, langLabel(c.lang)))),
+                    React.createElement("p", { className: "text-xs mt-0.5 mb-2", style: { color: C.sub } },
+                        c.treatment,
+                        " / \u8A3A\u5BDF\u5238 ",
+                        c.clinicId,
+                        " / \uD83D\uDCDE ",
+                        c.phone),
+                    React.createElement(Btn, { small: true, variant: "outline", onClick: () => resolveConsult(c) }, "\u5BFE\u5FDC\u6E08\u307F\u306B\u3059\u308B")))))),
             React.createElement("div", { className: "flex rounded-xl overflow-hidden mb-3", style: { border: `1.5px solid ${C.line}` } }, [["future", `今後の予約(${futureList.length})`], ["past", `過去の予約(${pastList.length})`]].map(([k, label]) => (React.createElement("button", { key: k, onClick: () => setAListMode(k), className: "flex-1 py-2 text-sm", style: { fontWeight: 600, background: aListMode === k ? C.primary : C.card, color: aListMode === k ? "#fff" : C.sub, border: "none", cursor: "pointer" } }, label)))),
             list.length === 0 ? (React.createElement("div", { className: "rounded-2xl p-6 text-center", style: { background: C.card, border: `1px solid ${C.line}` } },
                 React.createElement("p", { className: "text-sm", style: { color: C.sub } }, aListMode === "future" ? "予約はまだありません" : "過去の予約はありません"))) : (list.map((b) => (React.createElement("div", { key: b.date, className: "rounded-2xl p-4 mb-3", style: {
@@ -1147,7 +1309,8 @@ function App() {
                             " \u69D8",
                             b.lang && b.lang !== "ja" && (React.createElement("span", { className: "ml-2 text-xs px-1.5 py-0.5 rounded", style: { background: C.primarySoft, color: C.primary } }, langLabel(b.lang)))),
                         React.createElement("p", { className: "text-xs mt-0.5", style: { color: C.sub } },
-                            "\u8A3A\u5BDF\u5238 ",
+                            b.treatment,
+                            " / \u8A3A\u5BDF\u5238 ",
                             b.clinicId,
                             " / \uD83D\uDCDE ",
                             b.phone,
@@ -1158,7 +1321,7 @@ function App() {
                 aListMode === "future" && (React.createElement("div", { className: "flex gap-2" },
                     React.createElement("a", { href: gcalUrl({
                             date: b.date, time: b.time,
-                            title: `【糸リフト】${b.name} 様`,
+                            title: `【${b.treatment}】${b.name} 様`,
                             details: `予約番号: ${b.bookingNo}\n診察券番号: ${b.clinicId}\n携帯: ${b.phone}\n(${CLINIC_NAME} 予約システムより)`,
                         }), target: "_blank", rel: "noopener noreferrer", className: "flex-1", style: { textDecoration: "none" } },
                         React.createElement(Btn, { onClick: () => { } }, "\uD83D\uDCC5 \u30AB\u30EC\u30F3\u30C0\u30FC\u8FFD\u52A0")),
@@ -1203,7 +1366,7 @@ function App() {
         React.createElement("header", { className: "text-center pt-7 pb-4 px-4" },
             React.createElement("p", { className: "text-xs tracking-widest mb-1", style: { color: C.gold, letterSpacing: "0.3em" } }, t("webReserve")),
             React.createElement("h1", { className: "text-2xl", style: { fontFamily: fontDisplay, color: C.ink, fontWeight: 600, margin: 0 } }, CLINIC_NAME),
-            React.createElement("p", { className: "text-sm mt-1", style: { color: C.sub } }, t("treatment")),
+            React.createElement("p", { className: "text-sm mt-1", style: { color: C.sub } }, t("formTitle")),
             React.createElement("div", { className: "w-10 h-px mx-auto mt-3", style: { background: C.gold } })),
         React.createElement("main", { className: "max-w-md mx-auto px-4 pb-8 w-full flex-1", style: { boxSizing: "border-box" } }, loading ? (React.createElement("p", { className: "text-center py-10 text-sm", style: { color: C.sub } }, t("loadingAvail"))) : (React.createElement(React.Fragment, null,
             error && pScreen === "calendar" && (React.createElement("p", { className: "text-sm text-center mb-3", style: { color: C.danger } }, error)),
