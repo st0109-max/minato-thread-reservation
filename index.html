@@ -10,7 +10,6 @@
 <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
-<script crossorigin="anonymous" src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
   /* ---- ベース(Tailwind preflight相当) ---- */
   *, *::before, *::after { box-sizing: border-box; }
@@ -96,1381 +95,1127 @@
 <body>
 <div id="root"></div>
 <script>
-  // エラー時に真っ白にならないための保険(原因調査用) build v4
+  // エラー時に真っ白にならないための保険(原因調査用) build v5
   window.addEventListener("error", function (e) {
     var root = document.getElementById("root");
     if (root && !root.hasChildNodes()) {
       var src = e.filename ? ("<br>発生元: <code style='font-size:12px;'>" + String(e.filename).replace(/</g, "&lt;") + " (line " + e.lineno + ")</code>") : "";
-      root.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#B0483C;font-size:14px;">[build v4] 読み込みエラーが発生しました:<br><code style="font-size:12px;">' +
+      root.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#B0483C;font-size:14px;">[build v5] 読み込みエラーが発生しました:<br><code style="font-size:12px;">' +
         String(e.message || e.error || "unknown").replace(/</g, "&lt;") + '</code>' + src + '<br><br>ページを再読み込みしてもこの表示が出る場合は、この画面のスクリーンショットを開発者へお送りください。</div>';
     }
   });
 </script>
 
-<script type="text/babel" data-presets="react">
+<script>
+"use strict";
 const { useState, useEffect } = React;
-
 // ================= Supabase接続 =================
 const SUPABASE_URL = "https://xwfeafjoltrytvotvahw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3ZmVhZmpvbHRyeXR2b3R2YWh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNDQwMzIsImV4cCI6MjA5ODYyMDAzMn0.YIr7X8RtI3tyLV5e4vwJzoOaAE5u9lKUG7XsfB3cSFE";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 // ================= 設定 =================
 const CLINIC_NAME = "みなとクリニック";
 const CLINIC_NAME_EN = "MINATO CLINIC";
 const SLOT_TIMES = ["13:00", "13:30"];
-
 const C = {
-  bg: "#F6FAFC",
-  bgAdmin: "#EFF5F8",
-  card: "#FFFFFF",
-  ink: "#1D2B33",
-  sub: "#64808D",
-  primary: "#2E7FA3",
-  primarySoft: "#E3F2F8",
-  gold: "#1F5D7A",
-  goldSoft: "#DFEEF5",
-  line: "#DCE7EC",
-  danger: "#B0483C",
-  dangerSoft: "#F7E9E7",
-  dark: "#0C2A40",
-  aqua: "#8ED4E8",
+    bg: "#F6FAFC",
+    bgAdmin: "#EFF5F8",
+    card: "#FFFFFF",
+    ink: "#1D2B33",
+    sub: "#64808D",
+    primary: "#2E7FA3",
+    primarySoft: "#E3F2F8",
+    gold: "#1F5D7A",
+    goldSoft: "#DFEEF5",
+    line: "#DCE7EC",
+    danger: "#B0483C",
+    dangerSoft: "#F7E9E7",
+    dark: "#0C2A40",
+    aqua: "#8ED4E8",
 };
-
 const fontDisplay = "'Shippori Mincho', 'Hiragino Mincho ProN', serif";
 const fontBody = "'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Noto Sans Thai', sans-serif";
-
 // ================= 多言語 =================
 const LANGS = [
-  { code: "ja", label: "日本語" },
-  { code: "en", label: "English" },
-  { code: "zh", label: "中文" },
-  { code: "pt", label: "Português" },
-  { code: "es", label: "Español" },
-  { code: "th", label: "ไทย" },
+    { code: "ja", label: "日本語" },
+    { code: "en", label: "English" },
+    { code: "zh", label: "中文" },
+    { code: "pt", label: "Português" },
+    { code: "es", label: "Español" },
+    { code: "th", label: "ไทย" },
 ];
-
 const WD = {
-  ja: ["日", "月", "火", "水", "木", "金", "土"],
-  zh: ["日", "一", "二", "三", "四", "五", "六"],
-  en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  pt: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
-  es: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
-  th: ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"],
+    ja: ["日", "月", "火", "水", "木", "金", "土"],
+    zh: ["日", "一", "二", "三", "四", "五", "六"],
+    en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    pt: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+    es: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+    th: ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"],
 };
-
 const MONTH_NAMES = {
-  en: ["January","February","March","April","May","June","July","August","September","October","November","December"],
-  pt: ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"],
-  es: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
-  th: ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"],
+    en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    pt: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+    es: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+    th: ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"],
 };
 const MONTH_SHORT = {
-  en: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-  pt: ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"],
-  es: ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"],
-  th: ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."],
+    en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    pt: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"],
+    es: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"],
+    th: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."],
 };
-
 const TR = {
-  webReserve: { ja: "WEB予約", en: "ONLINE RESERVATION", zh: "在线预约", pt: "RESERVA ONLINE", es: "RESERVA EN LÍNEA", th: "จองออนไลน์" },
-  treatment: { ja: "糸リフト", en: "Thread Lift", zh: "埋线提升", pt: "Lifting com Fios", es: "Lifting con Hilos", th: "ร้อยไหม" },
-  ctaReserve: { ja: "ご予約はこちら", en: "Book an Appointment", zh: "立即预约", pt: "Fazer Reserva", es: "Reservar Cita", th: "จองคิว" },
-  lookupLink: { ja: "予約の確認・キャンセル", en: "Check / Cancel Reservation", zh: "查询・取消预约", pt: "Consultar / Cancelar Reserva", es: "Consultar / Cancelar Cita", th: "ตรวจสอบ / ยกเลิกการจอง" },
-  stepDate: { ja: "日付", en: "Date", zh: "日期", pt: "Data", es: "Fecha", th: "วันที่" },
-  stepTime: { ja: "時間", en: "Time", zh: "时间", pt: "Hora", es: "Hora", th: "เวลา" },
-  stepInput: { ja: "入力", en: "Details", zh: "填写", pt: "Dados", es: "Datos", th: "ข้อมูล" },
-  stepConfirm: { ja: "確認", en: "Confirm", zh: "确认", pt: "Confirmar", es: "Confirmar", th: "ยืนยัน" },
-  calInstruction: {
-    ja: "○ の日をタップしてください(受付 13:00〜14:00)",
-    en: "Tap a date marked ○  (Hours: 13:00–14:00)",
-    zh: "请点击标有 ○ 的日期(受理时间 13:00–14:00)",
-    pt: "Toque em uma data com ○  (Horário: 13:00–14:00)",
-    es: "Toque una fecha con ○  (Horario: 13:00–14:00)",
-    th: "แตะวันที่มีเครื่องหมาย ○ (เวลา 13:00–14:00)",
-  },
-  legendOpen: { ja: "○ 空きあり", en: "○ Available", zh: "○ 可预约", pt: "○ Disponível", es: "○ Disponible", th: "○ ว่าง" },
-  legendFull: { ja: "満 予約済み", en: "✕ Fully booked", zh: "满 已约满", pt: "✕ Esgotado", es: "✕ Completo", th: "✕ เต็ม" },
-  legendClosed: { ja: "− 受付なし", en: "− Closed", zh: "− 不受理", pt: "− Fechado", es: "− Cerrado", th: "− ปิดรับ" },
-  chooseTime: { ja: "ご希望の時間をお選びください", en: "Please choose a time", zh: "请选择时间", pt: "Escolha um horário", es: "Elija una hora", th: "กรุณาเลือกเวลา" },
-  backToDate: { ja: "← 日付選択に戻る", en: "← Back to dates", zh: "← 返回选择日期", pt: "← Voltar às datas", es: "← Volver a fechas", th: "← กลับไปเลือกวันที่" },
-  backToTime: { ja: "← 時間選択に戻る", en: "← Back to time", zh: "← 返回选择时间", pt: "← Voltar ao horário", es: "← Volver a la hora", th: "← กลับไปเลือกเวลา" },
-  backToForm: { ja: "← 入力に戻る", en: "← Back to details", zh: "← 返回填写", pt: "← Voltar aos dados", es: "← Volver a datos", th: "← กลับไปแก้ไขข้อมูล" },
-  backToTop: { ja: "← トップに戻る", en: "← Back to top", zh: "← 返回首页", pt: "← Voltar ao início", es: "← Volver al inicio", th: "← กลับหน้าแรก" },
-  fieldName: {
-    ja: "お名前(カタカナ または 英字)",
-    en: "Name (Katakana or English letters)",
-    zh: "姓名(片假名或英文字母)",
-    pt: "Nome (Katakana ou letras romanas)",
-    es: "Nombre (Katakana o letras romanas)",
-    th: "ชื่อ (คาตากานะ หรือ ตัวอักษรภาษาอังกฤษ)",
-  },
-  fieldNamePh: { ja: "ヤマダ ハナコ / TARO YAMADA", en: "TARO YAMADA", zh: "TARO YAMADA", pt: "TARO YAMADA", es: "TARO YAMADA", th: "TARO YAMADA" },
-  fieldId: { ja: "診察券番号", en: "Patient ID number", zh: "诊察券号码", pt: "Número do cartão de paciente", es: "Número de tarjeta de paciente", th: "หมายเลขบัตรผู้ป่วย" },
-  fieldIdPh: { ja: "例: 12345", en: "e.g. 12345", zh: "例: 12345", pt: "ex.: 12345", es: "ej.: 12345", th: "เช่น 12345" },
-  fieldPhone: { ja: "携帯電話番号", en: "Mobile phone number", zh: "手机号码", pt: "Número de celular", es: "Número de móvil", th: "หมายเลขโทรศัพท์มือถือ" },
-  errName: { ja: "お名前を入力してください", en: "Please enter your name", zh: "请输入姓名", pt: "Insira seu nome", es: "Ingrese su nombre", th: "กรุณากรอกชื่อ" },
-  errNameFormat: {
-    ja: "カタカナまたは英字で入力してください",
-    en: "Use Katakana or English letters only",
-    zh: "请使用片假名或英文字母",
-    pt: "Use apenas Katakana ou letras romanas",
-    es: "Use solo Katakana o letras romanas",
-    th: "ใช้คาตากานะหรือตัวอักษรภาษาอังกฤษเท่านั้น",
-  },
-  errId: { ja: "診察券番号を入力してください", en: "Please enter your patient ID", zh: "请输入诊察券号码", pt: "Insira o número do cartão", es: "Ingrese el número de tarjeta", th: "กรุณากรอกหมายเลขบัตรผู้ป่วย" },
-  errPhone: { ja: "携帯番号を正しく入力してください", en: "Please enter a valid phone number", zh: "请输入正确的手机号码", pt: "Insira um número válido", es: "Ingrese un número válido", th: "กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง" },
-  toConfirm: { ja: "確認画面へ進む", en: "Continue to confirmation", zh: "前往确认页面", pt: "Continuar para confirmação", es: "Continuar a confirmación", th: "ไปหน้ายืนยัน" },
-  confirmLead: { ja: "以下の内容でご予約を確定します", en: "Please confirm your reservation", zh: "请确认以下预约内容", pt: "Confirme sua reserva", es: "Confirme su reserva", th: "กรุณายืนยันการจองของคุณ" },
-  rowDate: { ja: "日時", en: "Date & Time", zh: "日期时间", pt: "Data e hora", es: "Fecha y hora", th: "วันและเวลา" },
-  rowContent: { ja: "内容", en: "Treatment", zh: "项目", pt: "Tratamento", es: "Tratamiento", th: "รายการ" },
-  rowName: { ja: "お名前", en: "Name", zh: "姓名", pt: "Nome", es: "Nombre", th: "ชื่อ" },
-  rowId: { ja: "診察券番号", en: "Patient ID", zh: "诊察券号码", pt: "Nº do cartão", es: "Nº de tarjeta", th: "หมายเลขบัตร" },
-  rowPhone: { ja: "携帯番号", en: "Mobile", zh: "手机号码", pt: "Celular", es: "Móvil", th: "โทรศัพท์" },
-  confirmBtn: { ja: "この内容で予約を確定する", en: "Confirm reservation", zh: "确定预约", pt: "Confirmar reserva", es: "Confirmar reserva", th: "ยืนยันการจอง" },
-  submitting: { ja: "予約を確定しています…", en: "Confirming…", zh: "正在确认…", pt: "Confirmando…", es: "Confirmando…", th: "กำลังยืนยัน…" },
-  doneTitle: { ja: "ご予約が完了しました", en: "Reservation Complete", zh: "预约已完成", pt: "Reserva Concluída", es: "Reserva Completada", th: "การจองเสร็จสมบูรณ์" },
-  bookingNoLabel: { ja: "予約番号", en: "Booking No.", zh: "预约编号", pt: "Nº da reserva", es: "Nº de reserva", th: "หมายเลขการจอง" },
-  addCal: { ja: "📅 カレンダーに追加して忘れず来院", en: "📅 Add to calendar", zh: "📅 添加到日历", pt: "📅 Adicionar ao calendário", es: "📅 Añadir al calendario", th: "📅 เพิ่มลงปฏิทิน" },
-  cancelNote: {
-    ja: "キャンセルはご予約前日の12:00まで「予約の確認・キャンセル」から承ります。それ以降はお電話にてご連絡ください。",
-    en: "Cancellations are accepted via “Check / Cancel Reservation” until 12:00 noon the day before. After that, please call the clinic.",
-    zh: "取消预约请在预约前一天中午12:00前通过「查询・取消预约」办理。逾期请致电诊所。",
-    pt: "Cancelamentos são aceitos por “Consultar / Cancelar Reserva” até 12h do dia anterior. Depois disso, ligue para a clínica.",
-    es: "Las cancelaciones se aceptan mediante “Consultar / Cancelar Cita” hasta las 12:00 del día anterior. Después, llame a la clínica.",
-    th: "ยกเลิกได้ผ่าน “ตรวจสอบ / ยกเลิกการจอง” จนถึงเที่ยงวันของวันก่อนนัด หลังจากนั้นกรุณาโทรติดต่อคลินิก",
-  },
-  cancelLocked: {
-    ja: "キャンセル期限(前日12:00)を過ぎています。お手数ですがクリニックへお電話ください。",
-    en: "The cancellation deadline (12:00 noon the day before) has passed. Please call the clinic.",
-    zh: "已过取消期限(前一天中午12:00)。请致电诊所。",
-    pt: "O prazo de cancelamento (12h do dia anterior) expirou. Ligue para a clínica.",
-    es: "El plazo de cancelación (12:00 del día anterior) ha vencido. Llame a la clínica.",
-    th: "เลยกำหนดยกเลิก (เที่ยงวันของวันก่อนนัด) แล้ว กรุณาโทรติดต่อคลินิก",
-  },
-  cancelDeadlineInfo: {
-    ja: "※ キャンセルはご予約前日の12:00まで承ります",
-    en: "※ Cancellations accepted until 12:00 noon the day before",
-    zh: "※ 取消受理至预约前一天中午12:00",
-    pt: "※ Cancelamentos até 12h do dia anterior",
-    es: "※ Cancelaciones hasta las 12:00 del día anterior",
-    th: "※ ยกเลิกได้ถึงเที่ยงวันของวันก่อนนัด",
-  },
-  errDup: {
-    ja: "同じ診察券番号でのご予約が既にあります。日時を変更される場合は、先に既存のご予約をキャンセルしてください。",
-    en: "A reservation already exists for this patient ID. Please cancel the existing reservation first.",
-    zh: "该诊察券号码已有预约。如需更改,请先取消现有预约。",
-    pt: "Já existe uma reserva para este cartão. Cancele a reserva existente primeiro.",
-    es: "Ya existe una reserva con esta tarjeta. Cancele primero la reserva existente.",
-    th: "หมายเลขบัตรนี้มีการจองอยู่แล้ว กรุณายกเลิกการจองเดิมก่อน",
-  },
-  errTaken: {
-    ja: "申し訳ありません。この枠はご予約いただけなくなりました。別の日をお選びください。",
-    en: "Sorry, this slot is no longer available. Please choose another date.",
-    zh: "抱歉,该时段已无法预约。请选择其他日期。",
-    pt: "Desculpe, este horário não está mais disponível. Escolha outra data.",
-    es: "Lo sentimos, este horario ya no está disponible. Elija otra fecha.",
-    th: "ขออภัย ช่วงเวลานี้ไม่ว่างแล้ว กรุณาเลือกวันอื่น",
-  },
-  errSave: {
-    ja: "予約の保存に失敗しました。もう一度お試しください。",
-    en: "Failed to save. Please try again.",
-    zh: "保存失败,请重试。",
-    pt: "Falha ao salvar. Tente novamente.",
-    es: "Error al guardar. Inténtelo de nuevo.",
-    th: "บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง",
-  },
-  errLookup: {
-    ja: "予約の検索に失敗しました。もう一度お試しください。",
-    en: "Search failed. Please try again.",
-    zh: "查询失败,请重试。",
-    pt: "Falha na busca. Tente novamente.",
-    es: "Error en la búsqueda. Inténtelo de nuevo.",
-    th: "ค้นหาไม่สำเร็จ กรุณาลองอีกครั้ง",
-  },
-  errCancel: {
-    ja: "キャンセルに失敗しました。お手数ですがクリニックへお電話ください。",
-    en: "Cancellation failed. Please call the clinic.",
-    zh: "取消失败,请致电诊所。",
-    pt: "Falha ao cancelar. Ligue para a clínica.",
-    es: "Error al cancelar. Llame a la clínica.",
-    th: "ยกเลิกไม่สำเร็จ กรุณาโทรติดต่อคลินิก",
-  },
-  loadingAvail: { ja: "空き状況を確認しています…", en: "Checking availability…", zh: "正在确认空位…", pt: "Verificando disponibilidade…", es: "Verificando disponibilidad…", th: "กำลังตรวจสอบคิวว่าง…" },
-  searchBtn: { ja: "予約を検索する", en: "Search reservation", zh: "查询预约", pt: "Buscar reserva", es: "Buscar reserva", th: "ค้นหาการจอง" },
-  searching: { ja: "検索しています…", en: "Searching…", zh: "查询中…", pt: "Buscando…", es: "Buscando…", th: "กำลังค้นหา…" },
-  notFound: {
-    ja: "該当するご予約が見つかりませんでした。入力内容をご確認ください。",
-    en: "No reservation found. Please check your details.",
-    zh: "未找到相关预约,请确认输入内容。",
-    pt: "Nenhuma reserva encontrada. Verifique os dados.",
-    es: "No se encontró ninguna reserva. Verifique los datos.",
-    th: "ไม่พบการจอง กรุณาตรวจสอบข้อมูล",
-  },
-  cancelThis: { ja: "この予約を取り消す", en: "Cancel this reservation", zh: "取消此预约", pt: "Cancelar esta reserva", es: "Cancelar esta cita", th: "ยกเลิกการจองนี้" },
-  cancelConfirm: {
-    ja: (d, tt) => `${d} ${tt} のご予約を取り消しますか?`,
-    en: (d, tt) => `Cancel your reservation on ${d} at ${tt}?`,
-    zh: (d, tt) => `确定取消 ${d} ${tt} 的预约吗?`,
-    pt: (d, tt) => `Cancelar sua reserva em ${d} às ${tt}?`,
-    es: (d, tt) => `¿Cancelar su cita el ${d} a las ${tt}?`,
-    th: (d, tt) => `ยกเลิกการจองวันที่ ${d} เวลา ${tt} หรือไม่?`,
-  },
-  gcalNote: {
-    ja: "ご来院の際は診察券をお持ちください。",
-    en: "Please bring your patient ID card.",
-    zh: "就诊时请携带诊察券。",
-    pt: "Traga seu cartão de paciente.",
-    es: "Traiga su tarjeta de paciente.",
-    th: "กรุณานำบัตรผู้ป่วยมาด้วย",
-  },
-  staffLink: { ja: "スタッフの方はこちら", en: "Staff login", zh: "员工入口", pt: "Acesso da equipe", es: "Acceso del personal", th: "สำหรับเจ้าหน้าที่" },
+    webReserve: { ja: "WEB予約", en: "ONLINE RESERVATION", zh: "在线预约", pt: "RESERVA ONLINE", es: "RESERVA EN LÍNEA", th: "จองออนไลน์" },
+    treatment: { ja: "糸リフト", en: "Thread Lift", zh: "埋线提升", pt: "Lifting com Fios", es: "Lifting con Hilos", th: "ร้อยไหม" },
+    ctaReserve: { ja: "ご予約はこちら", en: "Book an Appointment", zh: "立即预约", pt: "Fazer Reserva", es: "Reservar Cita", th: "จองคิว" },
+    lookupLink: { ja: "予約の確認・キャンセル", en: "Check / Cancel Reservation", zh: "查询・取消预约", pt: "Consultar / Cancelar Reserva", es: "Consultar / Cancelar Cita", th: "ตรวจสอบ / ยกเลิกการจอง" },
+    stepDate: { ja: "日付", en: "Date", zh: "日期", pt: "Data", es: "Fecha", th: "วันที่" },
+    stepTime: { ja: "時間", en: "Time", zh: "时间", pt: "Hora", es: "Hora", th: "เวลา" },
+    stepInput: { ja: "入力", en: "Details", zh: "填写", pt: "Dados", es: "Datos", th: "ข้อมูล" },
+    stepConfirm: { ja: "確認", en: "Confirm", zh: "确认", pt: "Confirmar", es: "Confirmar", th: "ยืนยัน" },
+    calInstruction: {
+        ja: "○ の日をタップしてください(受付 13:00〜14:00)",
+        en: "Tap a date marked ○  (Hours: 13:00–14:00)",
+        zh: "请点击标有 ○ 的日期(受理时间 13:00–14:00)",
+        pt: "Toque em uma data com ○  (Horário: 13:00–14:00)",
+        es: "Toque una fecha con ○  (Horario: 13:00–14:00)",
+        th: "แตะวันที่มีเครื่องหมาย ○ (เวลา 13:00–14:00)",
+    },
+    legendOpen: { ja: "○ 空きあり", en: "○ Available", zh: "○ 可预约", pt: "○ Disponível", es: "○ Disponible", th: "○ ว่าง" },
+    legendFull: { ja: "満 予約済み", en: "✕ Fully booked", zh: "满 已约满", pt: "✕ Esgotado", es: "✕ Completo", th: "✕ เต็ม" },
+    legendClosed: { ja: "− 受付なし", en: "− Closed", zh: "− 不受理", pt: "− Fechado", es: "− Cerrado", th: "− ปิดรับ" },
+    chooseTime: { ja: "ご希望の時間をお選びください", en: "Please choose a time", zh: "请选择时间", pt: "Escolha um horário", es: "Elija una hora", th: "กรุณาเลือกเวลา" },
+    backToDate: { ja: "← 日付選択に戻る", en: "← Back to dates", zh: "← 返回选择日期", pt: "← Voltar às datas", es: "← Volver a fechas", th: "← กลับไปเลือกวันที่" },
+    backToTime: { ja: "← 時間選択に戻る", en: "← Back to time", zh: "← 返回选择时间", pt: "← Voltar ao horário", es: "← Volver a la hora", th: "← กลับไปเลือกเวลา" },
+    backToForm: { ja: "← 入力に戻る", en: "← Back to details", zh: "← 返回填写", pt: "← Voltar aos dados", es: "← Volver a datos", th: "← กลับไปแก้ไขข้อมูล" },
+    backToTop: { ja: "← トップに戻る", en: "← Back to top", zh: "← 返回首页", pt: "← Voltar ao início", es: "← Volver al inicio", th: "← กลับหน้าแรก" },
+    fieldName: {
+        ja: "お名前(カタカナ または 英字)",
+        en: "Name (Katakana or English letters)",
+        zh: "姓名(片假名或英文字母)",
+        pt: "Nome (Katakana ou letras romanas)",
+        es: "Nombre (Katakana o letras romanas)",
+        th: "ชื่อ (คาตากานะ หรือ ตัวอักษรภาษาอังกฤษ)",
+    },
+    fieldNamePh: { ja: "ヤマダ ハナコ / TARO YAMADA", en: "TARO YAMADA", zh: "TARO YAMADA", pt: "TARO YAMADA", es: "TARO YAMADA", th: "TARO YAMADA" },
+    fieldId: { ja: "診察券番号", en: "Patient ID number", zh: "诊察券号码", pt: "Número do cartão de paciente", es: "Número de tarjeta de paciente", th: "หมายเลขบัตรผู้ป่วย" },
+    fieldIdPh: { ja: "例: 12345", en: "e.g. 12345", zh: "例: 12345", pt: "ex.: 12345", es: "ej.: 12345", th: "เช่น 12345" },
+    fieldPhone: { ja: "携帯電話番号", en: "Mobile phone number", zh: "手机号码", pt: "Número de celular", es: "Número de móvil", th: "หมายเลขโทรศัพท์มือถือ" },
+    errName: { ja: "お名前を入力してください", en: "Please enter your name", zh: "请输入姓名", pt: "Insira seu nome", es: "Ingrese su nombre", th: "กรุณากรอกชื่อ" },
+    errNameFormat: {
+        ja: "カタカナまたは英字で入力してください",
+        en: "Use Katakana or English letters only",
+        zh: "请使用片假名或英文字母",
+        pt: "Use apenas Katakana ou letras romanas",
+        es: "Use solo Katakana o letras romanas",
+        th: "ใช้คาตากานะหรือตัวอักษรภาษาอังกฤษเท่านั้น",
+    },
+    errId: { ja: "診察券番号を入力してください", en: "Please enter your patient ID", zh: "请输入诊察券号码", pt: "Insira o número do cartão", es: "Ingrese el número de tarjeta", th: "กรุณากรอกหมายเลขบัตรผู้ป่วย" },
+    errPhone: { ja: "携帯番号を正しく入力してください", en: "Please enter a valid phone number", zh: "请输入正确的手机号码", pt: "Insira um número válido", es: "Ingrese un número válido", th: "กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง" },
+    toConfirm: { ja: "確認画面へ進む", en: "Continue to confirmation", zh: "前往确认页面", pt: "Continuar para confirmação", es: "Continuar a confirmación", th: "ไปหน้ายืนยัน" },
+    confirmLead: { ja: "以下の内容でご予約を確定します", en: "Please confirm your reservation", zh: "请确认以下预约内容", pt: "Confirme sua reserva", es: "Confirme su reserva", th: "กรุณายืนยันการจองของคุณ" },
+    rowDate: { ja: "日時", en: "Date & Time", zh: "日期时间", pt: "Data e hora", es: "Fecha y hora", th: "วันและเวลา" },
+    rowContent: { ja: "内容", en: "Treatment", zh: "项目", pt: "Tratamento", es: "Tratamiento", th: "รายการ" },
+    rowName: { ja: "お名前", en: "Name", zh: "姓名", pt: "Nome", es: "Nombre", th: "ชื่อ" },
+    rowId: { ja: "診察券番号", en: "Patient ID", zh: "诊察券号码", pt: "Nº do cartão", es: "Nº de tarjeta", th: "หมายเลขบัตร" },
+    rowPhone: { ja: "携帯番号", en: "Mobile", zh: "手机号码", pt: "Celular", es: "Móvil", th: "โทรศัพท์" },
+    confirmBtn: { ja: "この内容で予約を確定する", en: "Confirm reservation", zh: "确定预约", pt: "Confirmar reserva", es: "Confirmar reserva", th: "ยืนยันการจอง" },
+    submitting: { ja: "予約を確定しています…", en: "Confirming…", zh: "正在确认…", pt: "Confirmando…", es: "Confirmando…", th: "กำลังยืนยัน…" },
+    doneTitle: { ja: "ご予約が完了しました", en: "Reservation Complete", zh: "预约已完成", pt: "Reserva Concluída", es: "Reserva Completada", th: "การจองเสร็จสมบูรณ์" },
+    bookingNoLabel: { ja: "予約番号", en: "Booking No.", zh: "预约编号", pt: "Nº da reserva", es: "Nº de reserva", th: "หมายเลขการจอง" },
+    addCal: { ja: "📅 カレンダーに追加して忘れず来院", en: "📅 Add to calendar", zh: "📅 添加到日历", pt: "📅 Adicionar ao calendário", es: "📅 Añadir al calendario", th: "📅 เพิ่มลงปฏิทิน" },
+    cancelNote: {
+        ja: "キャンセルはご予約前日の12:00まで「予約の確認・キャンセル」から承ります。それ以降はお電話にてご連絡ください。",
+        en: "Cancellations are accepted via “Check / Cancel Reservation” until 12:00 noon the day before. After that, please call the clinic.",
+        zh: "取消预约请在预约前一天中午12:00前通过「查询・取消预约」办理。逾期请致电诊所。",
+        pt: "Cancelamentos são aceitos por “Consultar / Cancelar Reserva” até 12h do dia anterior. Depois disso, ligue para a clínica.",
+        es: "Las cancelaciones se aceptan mediante “Consultar / Cancelar Cita” hasta las 12:00 del día anterior. Después, llame a la clínica.",
+        th: "ยกเลิกได้ผ่าน “ตรวจสอบ / ยกเลิกการจอง” จนถึงเที่ยงวันของวันก่อนนัด หลังจากนั้นกรุณาโทรติดต่อคลินิก",
+    },
+    cancelLocked: {
+        ja: "キャンセル期限(前日12:00)を過ぎています。お手数ですがクリニックへお電話ください。",
+        en: "The cancellation deadline (12:00 noon the day before) has passed. Please call the clinic.",
+        zh: "已过取消期限(前一天中午12:00)。请致电诊所。",
+        pt: "O prazo de cancelamento (12h do dia anterior) expirou. Ligue para a clínica.",
+        es: "El plazo de cancelación (12:00 del día anterior) ha vencido. Llame a la clínica.",
+        th: "เลยกำหนดยกเลิก (เที่ยงวันของวันก่อนนัด) แล้ว กรุณาโทรติดต่อคลินิก",
+    },
+    cancelDeadlineInfo: {
+        ja: "※ キャンセルはご予約前日の12:00まで承ります",
+        en: "※ Cancellations accepted until 12:00 noon the day before",
+        zh: "※ 取消受理至预约前一天中午12:00",
+        pt: "※ Cancelamentos até 12h do dia anterior",
+        es: "※ Cancelaciones hasta las 12:00 del día anterior",
+        th: "※ ยกเลิกได้ถึงเที่ยงวันของวันก่อนนัด",
+    },
+    errDup: {
+        ja: "同じ診察券番号でのご予約が既にあります。日時を変更される場合は、先に既存のご予約をキャンセルしてください。",
+        en: "A reservation already exists for this patient ID. Please cancel the existing reservation first.",
+        zh: "该诊察券号码已有预约。如需更改,请先取消现有预约。",
+        pt: "Já existe uma reserva para este cartão. Cancele a reserva existente primeiro.",
+        es: "Ya existe una reserva con esta tarjeta. Cancele primero la reserva existente.",
+        th: "หมายเลขบัตรนี้มีการจองอยู่แล้ว กรุณายกเลิกการจองเดิมก่อน",
+    },
+    errTaken: {
+        ja: "申し訳ありません。この枠はご予約いただけなくなりました。別の日をお選びください。",
+        en: "Sorry, this slot is no longer available. Please choose another date.",
+        zh: "抱歉,该时段已无法预约。请选择其他日期。",
+        pt: "Desculpe, este horário não está mais disponível. Escolha outra data.",
+        es: "Lo sentimos, este horario ya no está disponible. Elija otra fecha.",
+        th: "ขออภัย ช่วงเวลานี้ไม่ว่างแล้ว กรุณาเลือกวันอื่น",
+    },
+    errSave: {
+        ja: "予約の保存に失敗しました。もう一度お試しください。",
+        en: "Failed to save. Please try again.",
+        zh: "保存失败,请重试。",
+        pt: "Falha ao salvar. Tente novamente.",
+        es: "Error al guardar. Inténtelo de nuevo.",
+        th: "บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง",
+    },
+    errLookup: {
+        ja: "予約の検索に失敗しました。もう一度お試しください。",
+        en: "Search failed. Please try again.",
+        zh: "查询失败,请重试。",
+        pt: "Falha na busca. Tente novamente.",
+        es: "Error en la búsqueda. Inténtelo de nuevo.",
+        th: "ค้นหาไม่สำเร็จ กรุณาลองอีกครั้ง",
+    },
+    errCancel: {
+        ja: "キャンセルに失敗しました。お手数ですがクリニックへお電話ください。",
+        en: "Cancellation failed. Please call the clinic.",
+        zh: "取消失败,请致电诊所。",
+        pt: "Falha ao cancelar. Ligue para a clínica.",
+        es: "Error al cancelar. Llame a la clínica.",
+        th: "ยกเลิกไม่สำเร็จ กรุณาโทรติดต่อคลินิก",
+    },
+    loadingAvail: { ja: "空き状況を確認しています…", en: "Checking availability…", zh: "正在确认空位…", pt: "Verificando disponibilidade…", es: "Verificando disponibilidad…", th: "กำลังตรวจสอบคิวว่าง…" },
+    searchBtn: { ja: "予約を検索する", en: "Search reservation", zh: "查询预约", pt: "Buscar reserva", es: "Buscar reserva", th: "ค้นหาการจอง" },
+    searching: { ja: "検索しています…", en: "Searching…", zh: "查询中…", pt: "Buscando…", es: "Buscando…", th: "กำลังค้นหา…" },
+    notFound: {
+        ja: "該当するご予約が見つかりませんでした。入力内容をご確認ください。",
+        en: "No reservation found. Please check your details.",
+        zh: "未找到相关预约,请确认输入内容。",
+        pt: "Nenhuma reserva encontrada. Verifique os dados.",
+        es: "No se encontró ninguna reserva. Verifique los datos.",
+        th: "ไม่พบการจอง กรุณาตรวจสอบข้อมูล",
+    },
+    cancelThis: { ja: "この予約を取り消す", en: "Cancel this reservation", zh: "取消此预约", pt: "Cancelar esta reserva", es: "Cancelar esta cita", th: "ยกเลิกการจองนี้" },
+    cancelConfirm: {
+        ja: (d, tt) => `${d} ${tt} のご予約を取り消しますか?`,
+        en: (d, tt) => `Cancel your reservation on ${d} at ${tt}?`,
+        zh: (d, tt) => `确定取消 ${d} ${tt} 的预约吗?`,
+        pt: (d, tt) => `Cancelar sua reserva em ${d} às ${tt}?`,
+        es: (d, tt) => `¿Cancelar su cita el ${d} a las ${tt}?`,
+        th: (d, tt) => `ยกเลิกการจองวันที่ ${d} เวลา ${tt} หรือไม่?`,
+    },
+    gcalNote: {
+        ja: "ご来院の際は診察券をお持ちください。",
+        en: "Please bring your patient ID card.",
+        zh: "就诊时请携带诊察券。",
+        pt: "Traga seu cartão de paciente.",
+        es: "Traiga su tarjeta de paciente.",
+        th: "กรุณานำบัตรผู้ป่วยมาด้วย",
+    },
+    staffLink: { ja: "スタッフの方はこちら", en: "Staff login", zh: "员工入口", pt: "Acesso da equipe", es: "Acceso del personal", th: "สำหรับเจ้าหน้าที่" },
 };
-
 // ================= 日付ユーティリティ =================
 const pad = (n) => String(n).padStart(2, "0");
 const fmtDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-
 function localDate(dateStr, lang) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dow = new Date(y, m - 1, d).getDay();
-  if (lang === "ja") return `${m}月${d}日(${WD.ja[dow]})`;
-  if (lang === "zh") return `${m}月${d}日(周${WD.zh[dow]})`;
-  if (lang === "th") return `${WD.th[dow]}. ${d} ${MONTH_SHORT.th[m - 1]}`;
-  const wd = WD[lang][dow];
-  const mo = MONTH_SHORT[lang][m - 1];
-  if (lang === "en") return `${wd}, ${mo} ${d}`;
-  return `${wd}, ${d} ${mo}`;
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const dow = new Date(y, m - 1, d).getDay();
+    if (lang === "ja")
+        return `${m}月${d}日(${WD.ja[dow]})`;
+    if (lang === "zh")
+        return `${m}月${d}日(周${WD.zh[dow]})`;
+    if (lang === "th")
+        return `${WD.th[dow]}. ${d} ${MONTH_SHORT.th[m - 1]}`;
+    const wd = WD[lang][dow];
+    const mo = MONTH_SHORT[lang][m - 1];
+    if (lang === "en")
+        return `${wd}, ${mo} ${d}`;
+    return `${wd}, ${d} ${mo}`;
 }
-
 function monthLabel(year, month, lang) {
-  if (lang === "ja" || lang === "zh") return `${year}年${month + 1}月`;
-  return `${MONTH_NAMES[lang][month]} ${year}`;
+    if (lang === "ja" || lang === "zh")
+        return `${year}年${month + 1}月`;
+    return `${MONTH_NAMES[lang][month]} ${year}`;
 }
-
 function getMonths() {
-  const now = new Date();
-  return [0, 1].map((offset) => {
-    const first = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-    return { year: first.getFullYear(), month: first.getMonth() };
-  });
+    const now = new Date();
+    return [0, 1].map((offset) => {
+        const first = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+        return { year: first.getFullYear(), month: first.getMonth() };
+    });
 }
-
 function gcalUrl({ date, time, title, details }) {
-  const d = date.replace(/-/g, "");
-  const [h, mi] = time.split(":");
-  const start = `${d}T${h}${mi}00`;
-  const endH = mi === "30" ? pad(Number(h) + 1) : h;
-  const endM = mi === "30" ? "00" : "30";
-  const end = `${d}T${endH}${endM}00`;
-  const p = new URLSearchParams({
-    action: "TEMPLATE", text: title, dates: `${start}/${end}`,
-    ctz: "Asia/Tokyo", details,
-  });
-  return `https://calendar.google.com/calendar/render?${p.toString()}`;
+    const d = date.replace(/-/g, "");
+    const [h, mi] = time.split(":");
+    const start = `${d}T${h}${mi}00`;
+    const endH = mi === "30" ? pad(Number(h) + 1) : h;
+    const endM = mi === "30" ? "00" : "30";
+    const end = `${d}T${endH}${endM}00`;
+    const p = new URLSearchParams({
+        action: "TEMPLATE", text: title, dates: `${start}/${end}`,
+        ctz: "Asia/Tokyo", details,
+    });
+    return `https://calendar.google.com/calendar/render?${p.toString()}`;
 }
-
 const NAME_KATAKANA = /^[ァ-ヶーヽヾ・\s\u3000]+$/;
 const NAME_LATIN = /^[A-Za-z.\-'\s]+$/;
-
 function cancelDeadlinePassed(dateStr) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const deadline = new Date(y, m - 1, d - 1, 12, 0, 0);
-  return new Date() >= deadline;
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const deadline = new Date(y, m - 1, d - 1, 12, 0, 0);
+    return new Date() >= deadline;
 }
-
 // サーバーのエラーコード → 翻訳キー
 const ERR_KEY = {
-  taken: "errTaken", slot_closed: "errTaken", too_soon: "errTaken",
-  closed: "errTaken", too_far: "errTaken",
-  duplicate: "errDup",
-  invalid_name: "errNameFormat", invalid_input: "errSave", invalid_time: "errSave",
-  deadline: "cancelLocked", not_found: "notFound",
+    taken: "errTaken", slot_closed: "errTaken", too_soon: "errTaken",
+    closed: "errTaken", too_far: "errTaken",
+    duplicate: "errDup",
+    invalid_name: "errNameFormat", invalid_input: "errSave", invalid_time: "errSave",
+    deadline: "cancelLocked", not_found: "notFound",
 };
-
 // ================= メイン =================
 function App() {
-  const [mode, setMode] = useState("patient"); // patient | login | admin
-  const [lang, setLang] = useState("ja");
-  const t = (key, ...args) => {
-    const v = (TR[key] && (TR[key][lang] || TR[key].ja)) || key;
-    return typeof v === "function" ? v(...args) : v;
-  };
-
-  const [session, setSession] = useState(null);
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [loginErr, setLoginErr] = useState("");
-  const [loginBusy, setLoginBusy] = useState(false);
-
-  const [closedSlots, setClosedSlots] = useState({});   // {date: [times]}
-  const [bookedDates, setBookedDates] = useState(new Set()); // 患者用(日付のみ)
-  const [bookings, setBookings] = useState({});          // 管理用 {date: record}
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-
-  const months = getMonths();
-  const today = fmtDate(new Date());
-  const tomorrow = fmtDate(new Date(Date.now() + 86400000));
-
-  // ---------- セッション監視 ----------
-  useEffect(() => {
-    sb.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
-  // ---------- データ読み込み ----------
-  async function loadPublic() {
-    setLoading(true);
-    setError("");
-    try {
-      const [csRes, bdRes] = await Promise.all([
-        sb.from("closed_slots").select("date, time"),
-        sb.rpc("get_booked_dates"),
-      ]);
-      if (csRes.error) throw csRes.error;
-      if (bdRes.error) throw bdRes.error;
-      const cs = {};
-      (csRes.data || []).forEach((r) => {
-        if (!cs[r.date]) cs[r.date] = [];
-        cs[r.date].push(r.time);
-      });
-      setClosedSlots(cs);
-      setBookedDates(new Set((bdRes.data || []).map((r) => (typeof r === "string" ? r : r.get_booked_dates))));
-    } catch (e) {
-      setError(t("errLookup"));
-      console.error(e);
+    const [mode, setMode] = useState("patient"); // patient | login | admin
+    const [lang, setLang] = useState("ja");
+    const t = (key, ...args) => {
+        const v = (TR[key] && (TR[key][lang] || TR[key].ja)) || key;
+        return typeof v === "function" ? v(...args) : v;
+    };
+    const [session, setSession] = useState(null);
+    const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+    const [loginErr, setLoginErr] = useState("");
+    const [loginBusy, setLoginBusy] = useState(false);
+    const [closedSlots, setClosedSlots] = useState({}); // {date: [times]}
+    const [bookedDates, setBookedDates] = useState(new Set()); // 患者用(日付のみ)
+    const [bookings, setBookings] = useState({}); // 管理用 {date: record}
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [notice, setNotice] = useState("");
+    const months = getMonths();
+    const today = fmtDate(new Date());
+    const tomorrow = fmtDate(new Date(Date.now() + 86400000));
+    // ---------- セッション監視 ----------
+    useEffect(() => {
+        sb.auth.getSession().then(({ data }) => setSession(data.session));
+        const { data: sub } = sb.auth.onAuthStateChange((_e, s) => setSession(s));
+        return () => sub.subscription.unsubscribe();
+    }, []);
+    // ---------- データ読み込み ----------
+    async function loadPublic() {
+        setLoading(true);
+        setError("");
+        try {
+            const [csRes, bdRes] = await Promise.all([
+                sb.from("closed_slots").select("date, time"),
+                sb.rpc("get_booked_dates"),
+            ]);
+            if (csRes.error)
+                throw csRes.error;
+            if (bdRes.error)
+                throw bdRes.error;
+            const cs = {};
+            (csRes.data || []).forEach((r) => {
+                if (!cs[r.date])
+                    cs[r.date] = [];
+                cs[r.date].push(r.time);
+            });
+            setClosedSlots(cs);
+            setBookedDates(new Set((bdRes.data || []).map((r) => (typeof r === "string" ? r : r.get_booked_dates))));
+        }
+        catch (e) {
+            setError(t("errLookup"));
+            console.error(e);
+        }
+        setLoading(false);
     }
-    setLoading(false);
-  }
-
-  async function loadAdmin() {
-    setLoading(true);
-    setError("");
-    try {
-      const [csRes, bkRes] = await Promise.all([
-        sb.from("closed_slots").select("date, time"),
-        sb.from("bookings").select("*").order("date"),
-      ]);
-      if (csRes.error) throw csRes.error;
-      if (bkRes.error) throw bkRes.error;
-      const cs = {};
-      (csRes.data || []).forEach((r) => {
-        if (!cs[r.date]) cs[r.date] = [];
-        cs[r.date].push(r.time);
-      });
-      setClosedSlots(cs);
-      const bk = {};
-      (bkRes.data || []).forEach((r) => {
-        bk[r.date] = {
-          date: r.date, time: r.time, name: r.name,
-          clinicId: r.clinic_id, phone: r.phone,
-          bookingNo: r.booking_no, lang: r.lang,
-        };
-      });
-      setBookings(bk);
-    } catch (e) {
-      setError("データの読み込みに失敗しました。再読み込みしてください。");
-      console.error(e);
+    async function loadAdmin() {
+        setLoading(true);
+        setError("");
+        try {
+            const [csRes, bkRes] = await Promise.all([
+                sb.from("closed_slots").select("date, time"),
+                sb.from("bookings").select("*").order("date"),
+            ]);
+            if (csRes.error)
+                throw csRes.error;
+            if (bkRes.error)
+                throw bkRes.error;
+            const cs = {};
+            (csRes.data || []).forEach((r) => {
+                if (!cs[r.date])
+                    cs[r.date] = [];
+                cs[r.date].push(r.time);
+            });
+            setClosedSlots(cs);
+            const bk = {};
+            (bkRes.data || []).forEach((r) => {
+                bk[r.date] = {
+                    date: r.date, time: r.time, name: r.name,
+                    clinicId: r.clinic_id, phone: r.phone,
+                    bookingNo: r.booking_no, lang: r.lang,
+                };
+            });
+            setBookings(bk);
+        }
+        catch (e) {
+            setError("データの読み込みに失敗しました。再読み込みしてください。");
+            console.error(e);
+        }
+        setLoading(false);
     }
-    setLoading(false);
-  }
-
-  useEffect(() => { loadPublic(); }, []);
-  useEffect(() => { if (mode === "admin" && session) loadAdmin(); }, [mode, session]);
-
-  function flash(msg) {
-    setNotice(msg);
-    setTimeout(() => setNotice(""), 3000);
-  }
-
-  // ================= 共通UI =================
-  const Btn = ({ children, onClick, variant = "primary", disabled, small }) => (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`rounded-xl transition-opacity active:opacity-70 ${small ? "px-3 py-1.5 text-xs rounded-lg" : "w-full py-3 text-base"}`}
-      style={{
-        fontFamily: fontBody, fontWeight: 600, letterSpacing: "0.03em",
-        background:
-          variant === "primary" ? C.primary :
-          variant === "danger" ? C.dangerSoft :
-          variant === "ghost" ? "transparent" : C.card,
-        color:
-          variant === "primary" ? "#fff" :
-          variant === "danger" ? C.danger :
-          variant === "ghost" ? C.sub : C.primary,
-        border: variant === "outline" ? `1.5px solid ${C.line}` : "none",
-        opacity: disabled ? 0.4 : 1,
-        cursor: disabled ? "default" : "pointer",
-      }}
-    >
-      {children}
-    </button>
-  );
-
-  function MonthTabs({ monthIdx, onChange, l }) {
-    return (
-      <div className="flex rounded-xl overflow-hidden mb-4" style={{ border: `1.5px solid ${C.line}` }}>
-        {months.map((m, i) => (
-          <button key={i} onClick={() => onChange(i)}
-            className="flex-1 py-2.5 text-sm"
-            style={{
-              fontFamily: fontBody, fontWeight: 600,
-              background: monthIdx === i ? C.primary : C.card,
-              color: monthIdx === i ? "#fff" : C.sub,
-              cursor: "pointer", border: "none",
-            }}>
-            {monthLabel(m.year, m.month, l || lang)}
-          </button>
-        ))}
-      </div>
-    );
-  }
-
-  // ======================================================
-  // ================= 患者側 =================
-  // ======================================================
-  const [pScreen, setPScreen] = useState("landing");
-  const [pMonthIdx, setPMonthIdx] = useState(0);
-  const [selDate, setSelDate] = useState(null);
-  const [selTime, setSelTime] = useState(null);
-  const [form, setForm] = useState({ name: "", clinicId: "", phone: "" });
-  const [formErr, setFormErr] = useState({});
-  const [bookingNo, setBookingNo] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [lookupForm, setLookupForm] = useState({ clinicId: "", phone: "" });
-  const [myBookings, setMyBookings] = useState(null);
-  const [lookupBusy, setLookupBusy] = useState(false);
-
-  function dayStatus(dateStr, dow) {
-    if (dow === 0) return "closed";
-    if (dateStr <= tomorrow) return "past";
-    if (bookedDates.has(dateStr)) return "full";
-    const closed = closedSlots[dateStr] || [];
-    if (SLOT_TIMES.every((tt) => closed.includes(tt))) return "closed";
-    return "open";
-  }
-
-  function openTimesFor(dateStr) {
-    const closed = closedSlots[dateStr] || [];
-    return SLOT_TIMES.filter((tt) => !closed.includes(tt));
-  }
-
-  function validateForm() {
-    const e = {};
-    const nm = form.name.trim();
-    if (!nm) e.name = t("errName");
-    else if (!NAME_KATAKANA.test(nm) && !NAME_LATIN.test(nm)) e.name = t("errNameFormat");
-    if (!form.clinicId.trim()) e.clinicId = t("errId");
-    const digits = form.phone.replace(/[^0-9]/g, "");
-    if (digits.length < 10 || digits.length > 15) e.phone = t("errPhone");
-    setFormErr(e);
-    return Object.keys(e).length === 0;
-  }
-
-  async function submitBooking() {
-    setSubmitting(true);
-    setError("");
-    try {
-      const { data, error: err } = await sb.rpc("create_booking", {
-        p_date: selDate,
-        p_time: selTime,
-        p_name: form.name.trim(),
-        p_clinic_id: form.clinicId.trim(),
-        p_phone: form.phone.trim(),
-        p_lang: lang,
-      });
-      if (err) throw err;
-      if (!data.ok) {
-        setError(t(ERR_KEY[data.error] || "errSave"));
-        if (data.error === "taken" || data.error === "slot_closed") {
-          setPScreen("calendar");
-          loadPublic();
+    useEffect(() => { loadPublic(); }, []);
+    useEffect(() => { if (mode === "admin" && session)
+        loadAdmin(); }, [mode, session]);
+    function flash(msg) {
+        setNotice(msg);
+        setTimeout(() => setNotice(""), 3000);
+    }
+    // ================= 共通UI =================
+    const Btn = ({ children, onClick, variant = "primary", disabled, small }) => (React.createElement("button", { onClick: onClick, disabled: disabled, className: `rounded-xl transition-opacity active:opacity-70 ${small ? "px-3 py-1.5 text-xs rounded-lg" : "w-full py-3 text-base"}`, style: {
+            fontFamily: fontBody, fontWeight: 600, letterSpacing: "0.03em",
+            background: variant === "primary" ? C.primary :
+                variant === "danger" ? C.dangerSoft :
+                    variant === "ghost" ? "transparent" : C.card,
+            color: variant === "primary" ? "#fff" :
+                variant === "danger" ? C.danger :
+                    variant === "ghost" ? C.sub : C.primary,
+            border: variant === "outline" ? `1.5px solid ${C.line}` : "none",
+            opacity: disabled ? 0.4 : 1,
+            cursor: disabled ? "default" : "pointer",
+        } }, children));
+    function MonthTabs({ monthIdx, onChange, l }) {
+        return (React.createElement("div", { className: "flex rounded-xl overflow-hidden mb-4", style: { border: `1.5px solid ${C.line}` } }, months.map((m, i) => (React.createElement("button", { key: i, onClick: () => onChange(i), className: "flex-1 py-2.5 text-sm", style: {
+                fontFamily: fontBody, fontWeight: 600,
+                background: monthIdx === i ? C.primary : C.card,
+                color: monthIdx === i ? "#fff" : C.sub,
+                cursor: "pointer", border: "none",
+            } }, monthLabel(m.year, m.month, l || lang))))));
+    }
+    // ======================================================
+    // ================= 患者側 =================
+    // ======================================================
+    const [pScreen, setPScreen] = useState("landing");
+    const [pMonthIdx, setPMonthIdx] = useState(0);
+    const [selDate, setSelDate] = useState(null);
+    const [selTime, setSelTime] = useState(null);
+    const [form, setForm] = useState({ name: "", clinicId: "", phone: "" });
+    const [formErr, setFormErr] = useState({});
+    const [bookingNo, setBookingNo] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const [lookupForm, setLookupForm] = useState({ clinicId: "", phone: "" });
+    const [myBookings, setMyBookings] = useState(null);
+    const [lookupBusy, setLookupBusy] = useState(false);
+    function dayStatus(dateStr, dow) {
+        if (dow === 0)
+            return "closed";
+        if (dateStr <= tomorrow)
+            return "past";
+        if (bookedDates.has(dateStr))
+            return "full";
+        const closed = closedSlots[dateStr] || [];
+        if (SLOT_TIMES.every((tt) => closed.includes(tt)))
+            return "closed";
+        return "open";
+    }
+    function openTimesFor(dateStr) {
+        const closed = closedSlots[dateStr] || [];
+        return SLOT_TIMES.filter((tt) => !closed.includes(tt));
+    }
+    function validateForm() {
+        const e = {};
+        const nm = form.name.trim();
+        if (!nm)
+            e.name = t("errName");
+        else if (!NAME_KATAKANA.test(nm) && !NAME_LATIN.test(nm))
+            e.name = t("errNameFormat");
+        if (!form.clinicId.trim())
+            e.clinicId = t("errId");
+        const digits = form.phone.replace(/[^0-9]/g, "");
+        if (digits.length < 10 || digits.length > 15)
+            e.phone = t("errPhone");
+        setFormErr(e);
+        return Object.keys(e).length === 0;
+    }
+    async function submitBooking() {
+        setSubmitting(true);
+        setError("");
+        try {
+            const { data, error: err } = await sb.rpc("create_booking", {
+                p_date: selDate,
+                p_time: selTime,
+                p_name: form.name.trim(),
+                p_clinic_id: form.clinicId.trim(),
+                p_phone: form.phone.trim(),
+                p_lang: lang,
+            });
+            if (err)
+                throw err;
+            if (!data.ok) {
+                setError(t(ERR_KEY[data.error] || "errSave"));
+                if (data.error === "taken" || data.error === "slot_closed") {
+                    setPScreen("calendar");
+                    loadPublic();
+                }
+                setSubmitting(false);
+                return;
+            }
+            setBookingNo(data.booking_no);
+            setBookedDates((prev) => new Set([...prev, selDate]));
+            setPScreen("done");
+        }
+        catch (e) {
+            console.error(e);
+            setError(t("errSave"));
         }
         setSubmitting(false);
-        return;
-      }
-      setBookingNo(data.booking_no);
-      setBookedDates((prev) => new Set([...prev, selDate]));
-      setPScreen("done");
-    } catch (e) {
-      console.error(e);
-      setError(t("errSave"));
     }
-    setSubmitting(false);
-  }
-
-  async function lookupBookings() {
-    setLookupBusy(true);
-    setMyBookings(null);
-    setError("");
-    try {
-      const { data, error: err } = await sb.rpc("find_my_bookings", {
-        p_clinic_id: lookupForm.clinicId.trim(),
-        p_phone: lookupForm.phone.trim(),
-      });
-      if (err) throw err;
-      setMyBookings((data || []).map((r) => ({ date: r.bk_date, time: r.bk_time, bookingNo: r.booking_no })));
-    } catch (e) {
-      console.error(e);
-      setError(t("errLookup"));
+    async function lookupBookings() {
+        setLookupBusy(true);
+        setMyBookings(null);
+        setError("");
+        try {
+            const { data, error: err } = await sb.rpc("find_my_bookings", {
+                p_clinic_id: lookupForm.clinicId.trim(),
+                p_phone: lookupForm.phone.trim(),
+            });
+            if (err)
+                throw err;
+            setMyBookings((data || []).map((r) => ({ date: r.bk_date, time: r.bk_time, bookingNo: r.booking_no })));
+        }
+        catch (e) {
+            console.error(e);
+            setError(t("errLookup"));
+        }
+        setLookupBusy(false);
     }
-    setLookupBusy(false);
-  }
-
-  async function patientCancel(rec) {
-    if (!window.confirm(t("cancelConfirm", localDate(rec.date, lang), rec.time))) return;
-    try {
-      const { data, error: err } = await sb.rpc("cancel_my_booking", {
-        p_clinic_id: lookupForm.clinicId.trim(),
-        p_phone: lookupForm.phone.trim(),
-        p_date: rec.date,
-      });
-      if (err) throw err;
-      if (!data.ok) {
-        setError(t(ERR_KEY[data.error] || "errCancel"));
-        return;
-      }
-      setMyBookings((prev) => prev.filter((b) => b.date !== rec.date));
-      setBookedDates((prev) => {
-        const n = new Set(prev);
-        n.delete(rec.date);
-        return n;
-      });
-    } catch (e) {
-      console.error(e);
-      setError(t("errCancel"));
+    async function patientCancel(rec) {
+        if (!window.confirm(t("cancelConfirm", localDate(rec.date, lang), rec.time)))
+            return;
+        try {
+            const { data, error: err } = await sb.rpc("cancel_my_booking", {
+                p_clinic_id: lookupForm.clinicId.trim(),
+                p_phone: lookupForm.phone.trim(),
+                p_date: rec.date,
+            });
+            if (err)
+                throw err;
+            if (!data.ok) {
+                setError(t(ERR_KEY[data.error] || "errCancel"));
+                return;
+            }
+            setMyBookings((prev) => prev.filter((b) => b.date !== rec.date));
+            setBookedDates((prev) => {
+                const n = new Set(prev);
+                n.delete(rec.date);
+                return n;
+            });
+        }
+        catch (e) {
+            console.error(e);
+            setError(t("errCancel"));
+        }
     }
-  }
-
-  const StepDots = ({ step }) => (
-    <div className="flex items-center justify-center gap-2 my-3">
-      {[t("stepDate"), t("stepTime"), t("stepInput"), t("stepConfirm")].map((label, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <div className="flex flex-col items-center">
-            <div className="w-2 h-2 rounded-full" style={{ background: i <= step ? C.gold : C.line }} />
-            <span className="text-xs mt-1 whitespace-nowrap" style={{ color: i <= step ? C.ink : C.sub }}>{label}</span>
-          </div>
-          {i < 3 && <div className="w-5 h-px mb-4" style={{ background: C.line }} />}
-        </div>
-      ))}
-    </div>
-  );
-
-  // ---------- ランディング(海) ----------
-  function Landing() {
-    const SEA = {
-      base: "linear-gradient(180deg, #0A1E2E 0%, #0C2A40 55%, #0E3A52 100%)",
-      pill: "#3A5A6E",
-      pillText: "#8FB4C4",
-      subText: "#7FA6B8",
-      faint: "#3E606F",
-    };
-    return (
-      <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: SEA.base }}>
-        <style>{`
+    const StepDots = ({ step }) => (React.createElement("div", { className: "flex items-center justify-center gap-2 my-3" }, [t("stepDate"), t("stepTime"), t("stepInput"), t("stepConfirm")].map((label, i) => (React.createElement("div", { key: i, className: "flex items-center gap-2" },
+        React.createElement("div", { className: "flex flex-col items-center" },
+            React.createElement("div", { className: "w-2 h-2 rounded-full", style: { background: i <= step ? C.gold : C.line } }),
+            React.createElement("span", { className: "text-xs mt-1 whitespace-nowrap", style: { color: i <= step ? C.ink : C.sub } }, label)),
+        i < 3 && React.createElement("div", { className: "w-5 h-px mb-4", style: { background: C.line } }))))));
+    // ---------- ランディング(海) ----------
+    function Landing() {
+        const SEA = {
+            base: "linear-gradient(180deg, #0A1E2E 0%, #0C2A40 55%, #0E3A52 100%)",
+            pill: "#3A5A6E",
+            pillText: "#8FB4C4",
+            subText: "#7FA6B8",
+            faint: "#3E606F",
+        };
+        return (React.createElement("div", { className: "min-h-screen flex flex-col relative overflow-hidden", style: { background: SEA.base } },
+            React.createElement("style", null, `
           @keyframes drift1 { 0% { transform: translate(-15%, -10%) scale(1); } 50% { transform: translate(20%, 15%) scale(1.25); } 100% { transform: translate(-15%, -10%) scale(1); } }
           @keyframes drift2 { 0% { transform: translate(15%, 20%) scale(1.1); } 50% { transform: translate(-20%, -12%) scale(0.9); } 100% { transform: translate(15%, 20%) scale(1.1); } }
           @keyframes drift3 { 0% { transform: translate(0%, 0%) scale(1); } 50% { transform: translate(12%, -18%) scale(1.3); } 100% { transform: translate(0%, 0%) scale(1); } }
           @keyframes bubbleUp { 0% { transform: translateY(0) translateX(0); opacity: 0; } 10% { opacity: 0.8; } 50% { transform: translateY(-55vh) translateX(8px); } 85% { opacity: 0.8; } 100% { transform: translateY(-110vh) translateX(-6px); opacity: 0; } }
           @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        `}</style>
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute rounded-full" style={{ width: "70vmax", height: "70vmax", top: "-25%", left: "-20%", background: "radial-gradient(circle, rgba(72,170,205,0.5) 0%, rgba(72,170,205,0) 65%)", filter: "blur(50px)", animation: "drift1 22s ease-in-out infinite" }} />
-          <div className="absolute rounded-full" style={{ width: "60vmax", height: "60vmax", bottom: "-30%", right: "-25%", background: "radial-gradient(circle, rgba(140,215,235,0.35) 0%, rgba(140,215,235,0) 65%)", filter: "blur(60px)", animation: "drift2 28s ease-in-out infinite" }} />
-          <div className="absolute rounded-full" style={{ width: "45vmax", height: "45vmax", top: "30%", left: "30%", background: "radial-gradient(circle, rgba(40,120,160,0.45) 0%, rgba(40,120,160,0) 65%)", filter: "blur(55px)", animation: "drift3 18s ease-in-out infinite" }} />
-          <div className="absolute" style={{ top: 0, left: 0, right: 0, height: "35%", background: "linear-gradient(180deg, rgba(160,225,245,0.14) 0%, rgba(160,225,245,0) 100%)" }} />
-          {[
-            { l: "10%", d: "0s", s: "13s", z: 4 },
-            { l: "22%", d: "5s", s: "17s", z: 3 },
-            { l: "38%", d: "2s", s: "12s", z: 5 },
-            { l: "52%", d: "8s", s: "19s", z: 3 },
-            { l: "67%", d: "3.5s", s: "14s", z: 4 },
-            { l: "80%", d: "10s", s: "16s", z: 3 },
-            { l: "91%", d: "6s", s: "13.5s", z: 5 },
-          ].map((p, i) => (
-            <div key={i} className="absolute rounded-full" style={{ width: `${p.z}px`, height: `${p.z}px`, left: p.l, bottom: "-6px", background: "rgba(205,240,250,0.75)", boxShadow: "0 0 6px rgba(205,240,250,0.5)", animation: `bubbleUp ${p.s} ease-in ${p.d} infinite` }} />
-          ))}
-        </div>
-
-        <div className="relative flex flex-wrap justify-center gap-2 pt-6 px-4" style={{ animation: "fadeIn 0.8s ease-out both" }}>
-          {LANGS.map((l) => (
-            <button key={l.code} onClick={() => setLang(l.code)}
-              className="px-3 py-1.5 rounded-full text-xs transition-opacity active:opacity-60"
-              style={{
-                fontFamily: fontBody, fontWeight: 600,
-                background: lang === l.code ? "#BFE6F2" : "rgba(0,0,0,0.15)",
-                color: lang === l.code ? "#0A2433" : SEA.pillText,
-                border: `1px solid ${lang === l.code ? "#BFE6F2" : SEA.pill}`,
-                cursor: "pointer",
-              }}>
-              {l.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative flex-1 flex items-center justify-center px-6 py-10">
-          <div className="w-full max-w-md text-center" style={{ animation: "fadeIn 1.1s ease-out 0.15s both" }}>
-            <p className="text-xs mb-5" style={{ color: "#9FD8EA", letterSpacing: "0.45em", fontFamily: fontBody }}>{t("webReserve")}</p>
-            <h1 className="text-4xl mb-2 leading-snug" style={{ fontFamily: fontDisplay, color: "#F2F8FA", fontWeight: 600, textShadow: "0 2px 24px rgba(120,200,230,0.25)" }}>{CLINIC_NAME}</h1>
-            <p className="text-xs mb-10" style={{ color: SEA.subText, letterSpacing: "0.35em", fontFamily: fontBody }}>{CLINIC_NAME_EN}</p>
-            <button
-              onClick={() => setPScreen("calendar")}
-              className="w-full max-w-xs mx-auto block py-4 rounded-full text-base transition-opacity active:opacity-70 mb-5"
-              style={{ fontFamily: fontBody, fontWeight: 700, letterSpacing: "0.1em", background: "linear-gradient(135deg, #A8DEEF 0%, #6FBFDB 100%)", color: "#0A2433", boxShadow: "0 6px 30px rgba(110,190,220,0.45)", border: "none", cursor: "pointer" }}>
-              {t("ctaReserve")}
-            </button>
-            <button
-              onClick={() => { setMyBookings(null); setPScreen("lookup"); }}
-              className="text-sm underline underline-offset-4 active:opacity-60"
-              style={{ color: SEA.pillText, fontFamily: fontBody, background: "none", border: "none", cursor: "pointer" }}>
-              {t("lookupLink")}
-            </button>
-          </div>
-        </div>
-
-        <footer className="relative text-center pb-6">
-          <button onClick={() => { setLoginErr(""); setMode("login"); }}
-            className="text-xs" style={{ color: SEA.faint, background: "none", border: "none", cursor: "pointer" }}>
-            {t("staffLink")}
-          </button>
-        </footer>
-      </div>
-    );
-  }
-
-  // ---------- カレンダー(共通描画) ----------
-  function renderCalendarGrid(monthIdx, renderDay, l) {
-    const { year, month } = months[monthIdx];
-    const firstDow = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const cells = [];
-    for (let i = 0; i < firstDow; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-    return (
-      <div className="rounded-2xl p-3" style={{ background: C.card, border: `1px solid ${C.line}` }}>
-        <div className="grid grid-cols-7 mb-1">
-          {WD[l || lang].map((w, i) => (
-            <div key={i} className="text-center text-xs py-1"
-              style={{ color: i === 0 ? C.danger : i === 6 ? C.primary : C.sub, fontWeight: 600 }}>{w}</div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {cells.map((d, i) => {
-            if (d === null) return <div key={`e${i}`} />;
-            const dateStr = `${year}-${pad(month + 1)}-${pad(d)}`;
-            const dow = new Date(year, month, d).getDay();
-            return renderDay(dateStr, d, dow);
-          })}
-        </div>
-      </div>
-    );
-  }
-
-  function PatientCalendar() {
-    return (
-      <div>
-        <StepDots step={0} />
-        <p className="text-sm text-center mb-3" style={{ color: C.sub }}>{t("calInstruction")}</p>
-        <MonthTabs monthIdx={pMonthIdx} onChange={setPMonthIdx} />
-        {renderCalendarGrid(pMonthIdx, (dateStr, d, dow) => {
-          const st = dayStatus(dateStr, dow);
-          const tappable = st === "open";
-          const fullMark = lang === "ja" || lang === "zh" ? "満" : "✕";
-          return (
-            <button key={dateStr} disabled={!tappable}
-              onClick={() => { setSelDate(dateStr); setSelTime(null); setPScreen("time"); }}
-              className="rounded-lg flex flex-col items-center justify-center py-1.5 active:opacity-60"
-              style={{
-                minHeight: "52px",
-                background: tappable ? C.primarySoft : "transparent",
-                border: tappable ? `1.5px solid ${C.primary}` : "1.5px solid transparent",
-                cursor: tappable ? "pointer" : "default",
-              }}>
-              <span className="text-sm" style={{ color: st === "past" || st === "closed" ? "#B4C8D2" : dow === 0 ? C.danger : C.ink, fontWeight: 600 }}>{d}</span>
-              <span className="text-base leading-none mt-0.5" style={{ color: tappable ? C.primary : st === "full" ? C.gold : "#B4C8D2", fontWeight: 700 }}>
-                {st === "open" ? "○" : st === "full" ? fullMark : "−"}
-              </span>
-            </button>
-          );
-        })}
-        <div className="flex gap-4 justify-center mt-3 text-xs flex-wrap" style={{ color: C.sub }}>
-          <span>{t("legendOpen")}</span>
-          <span style={{ color: C.gold }}>{t("legendFull")}</span>
-          <span>{t("legendClosed")}</span>
-        </div>
-        <div className="mt-5 flex flex-col gap-3">
-          <Btn variant="outline" onClick={() => { setMyBookings(null); setPScreen("lookup"); }}>{t("lookupLink")}</Btn>
-          <Btn variant="ghost" onClick={() => setPScreen("landing")}>{t("backToTop")}</Btn>
-        </div>
-      </div>
-    );
-  }
-
-  function PatientTime() {
-    const times = openTimesFor(selDate);
-    return (
-      <div>
-        <StepDots step={1} />
-        <div className="text-center mb-4">
-          <p className="text-lg" style={{ fontFamily: fontDisplay, color: C.ink }}>{localDate(selDate, lang)}</p>
-          <p className="text-sm mt-1" style={{ color: C.sub }}>{t("chooseTime")}</p>
-        </div>
-        <div className="flex flex-col gap-3">
-          {times.map((tt) => (
-            <button key={tt}
-              onClick={() => { setSelTime(tt); setPScreen("form"); }}
-              className="py-4 rounded-xl text-lg active:opacity-60"
-              style={{ fontFamily: fontDisplay, fontWeight: 600, color: C.primary, background: C.card, border: `1.5px solid ${C.primary}`, cursor: "pointer" }}>
-              {tt} 〜
-            </button>
-          ))}
-        </div>
-        <div className="mt-5">
-          <Btn variant="ghost" onClick={() => setPScreen("calendar")}>{t("backToDate")}</Btn>
-        </div>
-      </div>
-    );
-  }
-
-  function PatientForm() {
-    const fields = [
-      { key: "name", label: t("fieldName"), ph: t("fieldNamePh"), type: "text", mode: "text" },
-      { key: "clinicId", label: t("fieldId"), ph: t("fieldIdPh"), type: "text", mode: "text" },
-      { key: "phone", label: t("fieldPhone"), ph: "09012345678", type: "tel", mode: "numeric" },
-    ];
-    return (
-      <div>
-        <StepDots step={2} />
-        <div className="text-center mb-4">
-          <p className="text-base" style={{ fontFamily: fontDisplay, color: C.ink }}>
-            {localDate(selDate, lang)} {selTime}〜 {t("treatment")}
-          </p>
-        </div>
-        <div className="flex flex-col gap-4">
-          {fields.map((f) => (
-            <div key={f.key}>
-              <label className="text-sm block mb-1.5" style={{ color: C.ink, fontWeight: 600 }}>{f.label}</label>
-              <input
-                type={f.type}
-                inputMode={f.mode}
-                value={form[f.key]}
-                onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                placeholder={f.ph}
-                className="w-full px-4 py-3 rounded-xl text-base outline-none box-border"
-                style={{ fontFamily: fontBody, background: C.card, color: C.ink, border: `1.5px solid ${formErr[f.key] ? C.danger : C.line}`, boxSizing: "border-box" }}
-              />
-              {formErr[f.key] && <p className="text-xs mt-1" style={{ color: C.danger }}>{formErr[f.key]}</p>}
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 flex flex-col gap-3">
-          <Btn onClick={() => { if (validateForm()) setPScreen("confirm"); }}>{t("toConfirm")}</Btn>
-          <Btn variant="ghost" onClick={() => setPScreen("time")}>{t("backToTime")}</Btn>
-        </div>
-      </div>
-    );
-  }
-
-  function PatientConfirm() {
-    const rows = [
-      [t("rowDate"), `${localDate(selDate, lang)} ${selTime}〜`],
-      [t("rowContent"), t("treatment")],
-      [t("rowName"), form.name],
-      [t("rowId"), form.clinicId],
-      [t("rowPhone"), form.phone],
-    ];
-    return (
-      <div>
-        <StepDots step={3} />
-        <p className="text-center text-sm mb-4" style={{ color: C.sub }}>{t("confirmLead")}</p>
-        <div className="rounded-2xl overflow-hidden" style={{ background: C.card, border: `1px solid ${C.line}` }}>
-          {rows.map(([k, v], i) => (
-            <div key={i} className="flex px-4 py-3.5" style={{ borderTop: i === 0 ? "none" : `1px solid ${C.line}` }}>
-              <span className="text-sm w-28 shrink-0" style={{ color: C.sub }}>{k}</span>
-              <span className="text-sm" style={{ color: C.ink, fontWeight: 600 }}>{v}</span>
-            </div>
-          ))}
-        </div>
-        {error && <p className="text-sm mt-3" style={{ color: C.danger }}>{error}</p>}
-        <div className="mt-6 flex flex-col gap-3">
-          <Btn onClick={submitBooking} disabled={submitting}>{submitting ? t("submitting") : t("confirmBtn")}</Btn>
-          <Btn variant="ghost" onClick={() => setPScreen("form")} disabled={submitting}>{t("backToForm")}</Btn>
-        </div>
-      </div>
-    );
-  }
-
-  function PatientDone() {
-    return (
-      <div className="text-center">
-        <div className="w-14 h-14 rounded-full mx-auto mt-2 mb-4 flex items-center justify-center" style={{ background: C.goldSoft }}>
-          <span style={{ color: C.gold, fontSize: "26px" }}>✓</span>
-        </div>
-        <h2 className="text-xl mb-1" style={{ fontFamily: fontDisplay, color: C.ink }}>{t("doneTitle")}</h2>
-        <p className="text-sm mb-5" style={{ color: C.sub }}>{localDate(selDate, lang)} {selTime}〜 {t("treatment")}</p>
-        <div className="rounded-2xl py-4 mb-5" style={{ background: C.card, border: `1px solid ${C.line}` }}>
-          <p className="text-xs mb-1" style={{ color: C.sub }}>{t("bookingNoLabel")}</p>
-          <p className="text-2xl tracking-widest" style={{ fontFamily: fontDisplay, color: C.primary, fontWeight: 700 }}>{bookingNo}</p>
-        </div>
-        <div className="flex flex-col gap-3">
-          <a href={gcalUrl({
-            date: selDate, time: selTime,
-            title: `${CLINIC_NAME} ${t("treatment")}`,
-            details: `${t("bookingNoLabel")}: ${bookingNo}\n${t("gcalNote")}`,
-          })} target="_blank" rel="noopener noreferrer" className="block" style={{ textDecoration: "none" }}>
-            <Btn onClick={() => {}}>{t("addCal")}</Btn>
-          </a>
-          <Btn variant="outline" onClick={() => {
-            setForm({ name: "", clinicId: "", phone: "" });
-            setSelDate(null); setSelTime(null);
-            setPScreen("landing"); loadPublic();
-          }}>
-            {t("backToTop")}
-          </Btn>
-        </div>
-        <div className="rounded-xl px-4 py-3 mt-5 text-left" style={{ background: C.goldSoft, border: `1px solid ${C.gold}` }}>
-          <p className="text-sm leading-relaxed" style={{ color: C.gold, fontWeight: 600 }}>{t("cancelNote")}</p>
-        </div>
-      </div>
-    );
-  }
-
-  function PatientLookup() {
-    return (
-      <div>
-        <h2 className="text-lg text-center mb-3" style={{ fontFamily: fontDisplay, color: C.ink }}>{t("lookupLink")}</h2>
-        <div className="rounded-xl px-4 py-3 mb-5 text-center" style={{ background: C.goldSoft, border: `1.5px solid ${C.gold}` }}>
-          <p className="text-sm leading-relaxed" style={{ color: C.gold, fontWeight: 700 }}>{t("cancelDeadlineInfo")}</p>
-        </div>
-        <div className="flex flex-col gap-4">
-          <div>
-            <label className="text-sm block mb-1.5" style={{ color: C.ink, fontWeight: 600 }}>{t("fieldId")}</label>
-            <input
-              value={lookupForm.clinicId}
-              onChange={(e) => setLookupForm((prev) => ({ ...prev, clinicId: e.target.value }))}
-              className="w-full px-4 py-3 rounded-xl text-base outline-none"
-              style={{ background: C.card, border: `1.5px solid ${C.line}`, color: C.ink, boxSizing: "border-box", fontFamily: fontBody }}
-            />
-          </div>
-          <div>
-            <label className="text-sm block mb-1.5" style={{ color: C.ink, fontWeight: 600 }}>{t("fieldPhone")}</label>
-            <input
-              type="tel" inputMode="numeric"
-              value={lookupForm.phone}
-              onChange={(e) => setLookupForm((prev) => ({ ...prev, phone: e.target.value }))}
-              className="w-full px-4 py-3 rounded-xl text-base outline-none"
-              style={{ background: C.card, border: `1.5px solid ${C.line}`, color: C.ink, boxSizing: "border-box", fontFamily: fontBody }}
-            />
-          </div>
-          <Btn onClick={lookupBookings} disabled={lookupBusy}>{lookupBusy ? t("searching") : t("searchBtn")}</Btn>
-        </div>
-        {error && <p className="text-sm mt-3 text-center" style={{ color: C.danger }}>{error}</p>}
-        {myBookings !== null && (
-          <div className="mt-5">
-            {myBookings.length === 0 ? (
-              <p className="text-sm text-center px-2" style={{ color: C.sub }}>{t("notFound")}</p>
-            ) : (
-              myBookings.map((b) => (
-                <div key={b.date} className="rounded-2xl p-4 mb-3" style={{ background: C.card, border: `1px solid ${C.line}` }}>
-                  <p className="text-base mb-0.5" style={{ fontFamily: fontDisplay, color: C.ink, fontWeight: 600 }}>
-                    {localDate(b.date, lang)} {b.time}〜
-                  </p>
-                  <p className="text-xs mb-3" style={{ color: C.sub }}>{t("treatment")} / {t("bookingNoLabel")} {b.bookingNo}</p>
-                  {cancelDeadlinePassed(b.date) ? (
-                    <div className="rounded-xl px-3 py-2.5 text-xs leading-relaxed" style={{ background: C.goldSoft, color: C.gold, fontWeight: 600 }}>
-                      {t("cancelLocked")}
-                    </div>
-                  ) : (
-                    <Btn variant="danger" onClick={() => patientCancel(b)}>{t("cancelThis")}</Btn>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        )}
-        <div className="mt-5">
-          <Btn variant="ghost" onClick={() => setPScreen("landing")}>{t("backToTop")}</Btn>
-        </div>
-      </div>
-    );
-  }
-
-  // ======================================================
-  // ================= 管理側(日本語のみ) =================
-  // ======================================================
-  const [aTab, setATab] = useState("slots");
-  const [aMonthIdx, setAMonthIdx] = useState(0);
-  const [aSelDate, setASelDate] = useState(null);
-  const [bulkMode, setBulkMode] = useState(false);
-  const [bulkSel, setBulkSel] = useState([]);
-  const [aListMode, setAListMode] = useState("future");
-
-  const jp = (dateStr) => localDate(dateStr, "ja");
-  const langLabel = (code) => (LANGS.find((l) => l.code === code) || {}).label || code;
-
-  async function doLogin() {
-    setLoginBusy(true);
-    setLoginErr("");
-    const { error: err } = await sb.auth.signInWithPassword({
-      email: loginForm.email.trim(),
-      password: loginForm.password,
-    });
-    setLoginBusy(false);
-    if (err) {
-      setLoginErr("ログインに失敗しました。メールアドレスとパスワードをご確認ください。");
-      return;
+        `),
+            React.createElement("div", { className: "absolute inset-0 pointer-events-none" },
+                React.createElement("div", { className: "absolute rounded-full", style: { width: "70vmax", height: "70vmax", top: "-25%", left: "-20%", background: "radial-gradient(circle, rgba(72,170,205,0.5) 0%, rgba(72,170,205,0) 65%)", filter: "blur(50px)", animation: "drift1 22s ease-in-out infinite" } }),
+                React.createElement("div", { className: "absolute rounded-full", style: { width: "60vmax", height: "60vmax", bottom: "-30%", right: "-25%", background: "radial-gradient(circle, rgba(140,215,235,0.35) 0%, rgba(140,215,235,0) 65%)", filter: "blur(60px)", animation: "drift2 28s ease-in-out infinite" } }),
+                React.createElement("div", { className: "absolute rounded-full", style: { width: "45vmax", height: "45vmax", top: "30%", left: "30%", background: "radial-gradient(circle, rgba(40,120,160,0.45) 0%, rgba(40,120,160,0) 65%)", filter: "blur(55px)", animation: "drift3 18s ease-in-out infinite" } }),
+                React.createElement("div", { className: "absolute", style: { top: 0, left: 0, right: 0, height: "35%", background: "linear-gradient(180deg, rgba(160,225,245,0.14) 0%, rgba(160,225,245,0) 100%)" } }),
+                [
+                    { l: "10%", d: "0s", s: "13s", z: 4 },
+                    { l: "22%", d: "5s", s: "17s", z: 3 },
+                    { l: "38%", d: "2s", s: "12s", z: 5 },
+                    { l: "52%", d: "8s", s: "19s", z: 3 },
+                    { l: "67%", d: "3.5s", s: "14s", z: 4 },
+                    { l: "80%", d: "10s", s: "16s", z: 3 },
+                    { l: "91%", d: "6s", s: "13.5s", z: 5 },
+                ].map((p, i) => (React.createElement("div", { key: i, className: "absolute rounded-full", style: { width: `${p.z}px`, height: `${p.z}px`, left: p.l, bottom: "-6px", background: "rgba(205,240,250,0.75)", boxShadow: "0 0 6px rgba(205,240,250,0.5)", animation: `bubbleUp ${p.s} ease-in ${p.d} infinite` } })))),
+            React.createElement("div", { className: "relative flex flex-wrap justify-center gap-2 pt-6 px-4", style: { animation: "fadeIn 0.8s ease-out both" } }, LANGS.map((l) => (React.createElement("button", { key: l.code, onClick: () => setLang(l.code), className: "px-3 py-1.5 rounded-full text-xs transition-opacity active:opacity-60", style: {
+                    fontFamily: fontBody, fontWeight: 600,
+                    background: lang === l.code ? "#BFE6F2" : "rgba(0,0,0,0.15)",
+                    color: lang === l.code ? "#0A2433" : SEA.pillText,
+                    border: `1px solid ${lang === l.code ? "#BFE6F2" : SEA.pill}`,
+                    cursor: "pointer",
+                } }, l.label)))),
+            React.createElement("div", { className: "relative flex-1 flex items-center justify-center px-6 py-10" },
+                React.createElement("div", { className: "w-full max-w-md text-center", style: { animation: "fadeIn 1.1s ease-out 0.15s both" } },
+                    React.createElement("p", { className: "text-xs mb-5", style: { color: "#9FD8EA", letterSpacing: "0.45em", fontFamily: fontBody } }, t("webReserve")),
+                    React.createElement("h1", { className: "text-4xl mb-2 leading-snug", style: { fontFamily: fontDisplay, color: "#F2F8FA", fontWeight: 600, textShadow: "0 2px 24px rgba(120,200,230,0.25)" } }, CLINIC_NAME),
+                    React.createElement("p", { className: "text-xs mb-10", style: { color: SEA.subText, letterSpacing: "0.35em", fontFamily: fontBody } }, CLINIC_NAME_EN),
+                    React.createElement("button", { onClick: () => setPScreen("calendar"), className: "w-full max-w-xs mx-auto block py-4 rounded-full text-base transition-opacity active:opacity-70 mb-5", style: { fontFamily: fontBody, fontWeight: 700, letterSpacing: "0.1em", background: "linear-gradient(135deg, #A8DEEF 0%, #6FBFDB 100%)", color: "#0A2433", boxShadow: "0 6px 30px rgba(110,190,220,0.45)", border: "none", cursor: "pointer" } }, t("ctaReserve")),
+                    React.createElement("button", { onClick: () => { setMyBookings(null); setPScreen("lookup"); }, className: "text-sm underline underline-offset-4 active:opacity-60", style: { color: SEA.pillText, fontFamily: fontBody, background: "none", border: "none", cursor: "pointer" } }, t("lookupLink")))),
+            React.createElement("footer", { className: "relative text-center pb-6" },
+                React.createElement("button", { onClick: () => { setLoginErr(""); setMode("login"); }, className: "text-xs", style: { color: SEA.faint, background: "none", border: "none", cursor: "pointer" } }, t("staffLink")))));
     }
-    setMode("admin");
-  }
-
-  async function doLogout() {
-    await sb.auth.signOut();
-    setMode("patient");
-    setPScreen("landing");
-    setLoginForm({ email: "", password: "" });
-    loadPublic();
-  }
-
-  async function toggleSlot(dateStr, time) {
-    const cur = closedSlots[dateStr] || [];
-    const nowClosed = cur.includes(time);
-    try {
-      if (nowClosed) {
-        const { error: err } = await sb.from("closed_slots").delete().match({ date: dateStr, time });
-        if (err) throw err;
-      } else {
-        const { error: err } = await sb.from("closed_slots").upsert({ date: dateStr, time });
-        if (err) throw err;
-      }
-      setClosedSlots((prev) => {
-        const n = { ...prev };
-        if (nowClosed) {
-          n[dateStr] = (n[dateStr] || []).filter((tt) => tt !== time);
-          if (n[dateStr].length === 0) delete n[dateStr];
-        } else {
-          n[dateStr] = [...(n[dateStr] || []), time];
-        }
-        return n;
-      });
-      flash(`${jp(dateStr)} ${time} を${nowClosed ? "受付再開" : "停止"}しました`);
-    } catch (e) {
-      console.error(e);
-      setError("枠の更新に失敗しました。もう一度お試しください。");
+    // ---------- カレンダー(共通描画) ----------
+    function renderCalendarGrid(monthIdx, renderDay, l) {
+        const { year, month } = months[monthIdx];
+        const firstDow = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const cells = [];
+        for (let i = 0; i < firstDow; i++)
+            cells.push(null);
+        for (let d = 1; d <= daysInMonth; d++)
+            cells.push(d);
+        return (React.createElement("div", { className: "rounded-2xl p-3", style: { background: C.card, border: `1px solid ${C.line}` } },
+            React.createElement("div", { className: "grid grid-cols-7 mb-1" }, WD[l || lang].map((w, i) => (React.createElement("div", { key: i, className: "text-center text-xs py-1", style: { color: i === 0 ? C.danger : i === 6 ? C.primary : C.sub, fontWeight: 600 } }, w)))),
+            React.createElement("div", { className: "grid grid-cols-7 gap-1" }, cells.map((d, i) => {
+                if (d === null)
+                    return React.createElement("div", { key: `e${i}` });
+                const dateStr = `${year}-${pad(month + 1)}-${pad(d)}`;
+                const dow = new Date(year, month, d).getDay();
+                return renderDay(dateStr, d, dow);
+            }))));
     }
-  }
-
-  async function setDayAll(dateStr, close) {
-    try {
-      if (close) {
-        const { error: err } = await sb.from("closed_slots").upsert(SLOT_TIMES.map((tt) => ({ date: dateStr, time: tt })));
-        if (err) throw err;
-      } else {
-        const { error: err } = await sb.from("closed_slots").delete().eq("date", dateStr);
-        if (err) throw err;
-      }
-      setClosedSlots((prev) => {
-        const n = { ...prev };
-        if (close) n[dateStr] = [...SLOT_TIMES];
-        else delete n[dateStr];
-        return n;
-      });
-      flash(`${jp(dateStr)} の受付を${close ? "全て停止" : "全て再開"}しました`);
-    } catch (e) {
-      console.error(e);
-      setError("枠の更新に失敗しました。もう一度お試しください。");
+    function PatientCalendar() {
+        return (React.createElement("div", null,
+            React.createElement(StepDots, { step: 0 }),
+            React.createElement("p", { className: "text-sm text-center mb-3", style: { color: C.sub } }, t("calInstruction")),
+            React.createElement(MonthTabs, { monthIdx: pMonthIdx, onChange: setPMonthIdx }),
+            renderCalendarGrid(pMonthIdx, (dateStr, d, dow) => {
+                const st = dayStatus(dateStr, dow);
+                const tappable = st === "open";
+                const fullMark = lang === "ja" || lang === "zh" ? "満" : "✕";
+                return (React.createElement("button", { key: dateStr, disabled: !tappable, onClick: () => { setSelDate(dateStr); setSelTime(null); setPScreen("time"); }, className: "rounded-lg flex flex-col items-center justify-center py-1.5 active:opacity-60", style: {
+                        minHeight: "52px",
+                        background: tappable ? C.primarySoft : "transparent",
+                        border: tappable ? `1.5px solid ${C.primary}` : "1.5px solid transparent",
+                        cursor: tappable ? "pointer" : "default",
+                    } },
+                    React.createElement("span", { className: "text-sm", style: { color: st === "past" || st === "closed" ? "#B4C8D2" : dow === 0 ? C.danger : C.ink, fontWeight: 600 } }, d),
+                    React.createElement("span", { className: "text-base leading-none mt-0.5", style: { color: tappable ? C.primary : st === "full" ? C.gold : "#B4C8D2", fontWeight: 700 } }, st === "open" ? "○" : st === "full" ? fullMark : "−")));
+            }),
+            React.createElement("div", { className: "flex gap-4 justify-center mt-3 text-xs flex-wrap", style: { color: C.sub } },
+                React.createElement("span", null, t("legendOpen")),
+                React.createElement("span", { style: { color: C.gold } }, t("legendFull")),
+                React.createElement("span", null, t("legendClosed"))),
+            React.createElement("div", { className: "mt-5 flex flex-col gap-3" },
+                React.createElement(Btn, { variant: "outline", onClick: () => { setMyBookings(null); setPScreen("lookup"); } }, t("lookupLink")),
+                React.createElement(Btn, { variant: "ghost", onClick: () => setPScreen("landing") }, t("backToTop")))));
     }
-  }
-
-  async function applyBulk(close) {
-    if (bulkSel.length === 0) return;
-    try {
-      if (close) {
-        const rows = [];
-        bulkSel.forEach((d) => SLOT_TIMES.forEach((tt) => rows.push({ date: d, time: tt })));
-        const { error: err } = await sb.from("closed_slots").upsert(rows);
-        if (err) throw err;
-      } else {
-        const { error: err } = await sb.from("closed_slots").delete().in("date", bulkSel);
-        if (err) throw err;
-      }
-      setClosedSlots((prev) => {
-        const n = { ...prev };
-        bulkSel.forEach((d) => {
-          if (close) n[d] = [...SLOT_TIMES];
-          else delete n[d];
+    function PatientTime() {
+        const times = openTimesFor(selDate);
+        return (React.createElement("div", null,
+            React.createElement(StepDots, { step: 1 }),
+            React.createElement("div", { className: "text-center mb-4" },
+                React.createElement("p", { className: "text-lg", style: { fontFamily: fontDisplay, color: C.ink } }, localDate(selDate, lang)),
+                React.createElement("p", { className: "text-sm mt-1", style: { color: C.sub } }, t("chooseTime"))),
+            React.createElement("div", { className: "flex flex-col gap-3" }, times.map((tt) => (React.createElement("button", { key: tt, onClick: () => { setSelTime(tt); setPScreen("form"); }, className: "py-4 rounded-xl text-lg active:opacity-60", style: { fontFamily: fontDisplay, fontWeight: 600, color: C.primary, background: C.card, border: `1.5px solid ${C.primary}`, cursor: "pointer" } },
+                tt,
+                " \u301C")))),
+            React.createElement("div", { className: "mt-5" },
+                React.createElement(Btn, { variant: "ghost", onClick: () => setPScreen("calendar") }, t("backToDate")))));
+    }
+    function PatientForm() {
+        const fields = [
+            { key: "name", label: t("fieldName"), ph: t("fieldNamePh"), type: "text", mode: "text" },
+            { key: "clinicId", label: t("fieldId"), ph: t("fieldIdPh"), type: "text", mode: "text" },
+            { key: "phone", label: t("fieldPhone"), ph: "09012345678", type: "tel", mode: "numeric" },
+        ];
+        return (React.createElement("div", null,
+            React.createElement(StepDots, { step: 2 }),
+            React.createElement("div", { className: "text-center mb-4" },
+                React.createElement("p", { className: "text-base", style: { fontFamily: fontDisplay, color: C.ink } },
+                    localDate(selDate, lang),
+                    " ",
+                    selTime,
+                    "\u301C ",
+                    t("treatment"))),
+            React.createElement("div", { className: "flex flex-col gap-4" }, fields.map((f) => (React.createElement("div", { key: f.key },
+                React.createElement("label", { className: "text-sm block mb-1.5", style: { color: C.ink, fontWeight: 600 } }, f.label),
+                React.createElement("input", { type: f.type, inputMode: f.mode, value: form[f.key], onChange: (e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value })), placeholder: f.ph, className: "w-full px-4 py-3 rounded-xl text-base outline-none box-border", style: { fontFamily: fontBody, background: C.card, color: C.ink, border: `1.5px solid ${formErr[f.key] ? C.danger : C.line}`, boxSizing: "border-box" } }),
+                formErr[f.key] && React.createElement("p", { className: "text-xs mt-1", style: { color: C.danger } }, formErr[f.key]))))),
+            React.createElement("div", { className: "mt-6 flex flex-col gap-3" },
+                React.createElement(Btn, { onClick: () => { if (validateForm())
+                        setPScreen("confirm"); } }, t("toConfirm")),
+                React.createElement(Btn, { variant: "ghost", onClick: () => setPScreen("time") }, t("backToTime")))));
+    }
+    function PatientConfirm() {
+        const rows = [
+            [t("rowDate"), `${localDate(selDate, lang)} ${selTime}〜`],
+            [t("rowContent"), t("treatment")],
+            [t("rowName"), form.name],
+            [t("rowId"), form.clinicId],
+            [t("rowPhone"), form.phone],
+        ];
+        return (React.createElement("div", null,
+            React.createElement(StepDots, { step: 3 }),
+            React.createElement("p", { className: "text-center text-sm mb-4", style: { color: C.sub } }, t("confirmLead")),
+            React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { background: C.card, border: `1px solid ${C.line}` } }, rows.map(([k, v], i) => (React.createElement("div", { key: i, className: "flex px-4 py-3.5", style: { borderTop: i === 0 ? "none" : `1px solid ${C.line}` } },
+                React.createElement("span", { className: "text-sm w-28 shrink-0", style: { color: C.sub } }, k),
+                React.createElement("span", { className: "text-sm", style: { color: C.ink, fontWeight: 600 } }, v))))),
+            error && React.createElement("p", { className: "text-sm mt-3", style: { color: C.danger } }, error),
+            React.createElement("div", { className: "mt-6 flex flex-col gap-3" },
+                React.createElement(Btn, { onClick: submitBooking, disabled: submitting }, submitting ? t("submitting") : t("confirmBtn")),
+                React.createElement(Btn, { variant: "ghost", onClick: () => setPScreen("form"), disabled: submitting }, t("backToForm")))));
+    }
+    function PatientDone() {
+        return (React.createElement("div", { className: "text-center" },
+            React.createElement("div", { className: "w-14 h-14 rounded-full mx-auto mt-2 mb-4 flex items-center justify-center", style: { background: C.goldSoft } },
+                React.createElement("span", { style: { color: C.gold, fontSize: "26px" } }, "\u2713")),
+            React.createElement("h2", { className: "text-xl mb-1", style: { fontFamily: fontDisplay, color: C.ink } }, t("doneTitle")),
+            React.createElement("p", { className: "text-sm mb-5", style: { color: C.sub } },
+                localDate(selDate, lang),
+                " ",
+                selTime,
+                "\u301C ",
+                t("treatment")),
+            React.createElement("div", { className: "rounded-2xl py-4 mb-5", style: { background: C.card, border: `1px solid ${C.line}` } },
+                React.createElement("p", { className: "text-xs mb-1", style: { color: C.sub } }, t("bookingNoLabel")),
+                React.createElement("p", { className: "text-2xl tracking-widest", style: { fontFamily: fontDisplay, color: C.primary, fontWeight: 700 } }, bookingNo)),
+            React.createElement("div", { className: "flex flex-col gap-3" },
+                React.createElement("a", { href: gcalUrl({
+                        date: selDate, time: selTime,
+                        title: `${CLINIC_NAME} ${t("treatment")}`,
+                        details: `${t("bookingNoLabel")}: ${bookingNo}\n${t("gcalNote")}`,
+                    }), target: "_blank", rel: "noopener noreferrer", className: "block", style: { textDecoration: "none" } },
+                    React.createElement(Btn, { onClick: () => { } }, t("addCal"))),
+                React.createElement(Btn, { variant: "outline", onClick: () => {
+                        setForm({ name: "", clinicId: "", phone: "" });
+                        setSelDate(null);
+                        setSelTime(null);
+                        setPScreen("landing");
+                        loadPublic();
+                    } }, t("backToTop"))),
+            React.createElement("div", { className: "rounded-xl px-4 py-3 mt-5 text-left", style: { background: C.goldSoft, border: `1px solid ${C.gold}` } },
+                React.createElement("p", { className: "text-sm leading-relaxed", style: { color: C.gold, fontWeight: 600 } }, t("cancelNote")))));
+    }
+    function PatientLookup() {
+        return (React.createElement("div", null,
+            React.createElement("h2", { className: "text-lg text-center mb-3", style: { fontFamily: fontDisplay, color: C.ink } }, t("lookupLink")),
+            React.createElement("div", { className: "rounded-xl px-4 py-3 mb-5 text-center", style: { background: C.goldSoft, border: `1.5px solid ${C.gold}` } },
+                React.createElement("p", { className: "text-sm leading-relaxed", style: { color: C.gold, fontWeight: 700 } }, t("cancelDeadlineInfo"))),
+            React.createElement("div", { className: "flex flex-col gap-4" },
+                React.createElement("div", null,
+                    React.createElement("label", { className: "text-sm block mb-1.5", style: { color: C.ink, fontWeight: 600 } }, t("fieldId")),
+                    React.createElement("input", { value: lookupForm.clinicId, onChange: (e) => setLookupForm((prev) => ({ ...prev, clinicId: e.target.value })), className: "w-full px-4 py-3 rounded-xl text-base outline-none", style: { background: C.card, border: `1.5px solid ${C.line}`, color: C.ink, boxSizing: "border-box", fontFamily: fontBody } })),
+                React.createElement("div", null,
+                    React.createElement("label", { className: "text-sm block mb-1.5", style: { color: C.ink, fontWeight: 600 } }, t("fieldPhone")),
+                    React.createElement("input", { type: "tel", inputMode: "numeric", value: lookupForm.phone, onChange: (e) => setLookupForm((prev) => ({ ...prev, phone: e.target.value })), className: "w-full px-4 py-3 rounded-xl text-base outline-none", style: { background: C.card, border: `1.5px solid ${C.line}`, color: C.ink, boxSizing: "border-box", fontFamily: fontBody } })),
+                React.createElement(Btn, { onClick: lookupBookings, disabled: lookupBusy }, lookupBusy ? t("searching") : t("searchBtn"))),
+            error && React.createElement("p", { className: "text-sm mt-3 text-center", style: { color: C.danger } }, error),
+            myBookings !== null && (React.createElement("div", { className: "mt-5" }, myBookings.length === 0 ? (React.createElement("p", { className: "text-sm text-center px-2", style: { color: C.sub } }, t("notFound"))) : (myBookings.map((b) => (React.createElement("div", { key: b.date, className: "rounded-2xl p-4 mb-3", style: { background: C.card, border: `1px solid ${C.line}` } },
+                React.createElement("p", { className: "text-base mb-0.5", style: { fontFamily: fontDisplay, color: C.ink, fontWeight: 600 } },
+                    localDate(b.date, lang),
+                    " ",
+                    b.time,
+                    "\u301C"),
+                React.createElement("p", { className: "text-xs mb-3", style: { color: C.sub } },
+                    t("treatment"),
+                    " / ",
+                    t("bookingNoLabel"),
+                    " ",
+                    b.bookingNo),
+                cancelDeadlinePassed(b.date) ? (React.createElement("div", { className: "rounded-xl px-3 py-2.5 text-xs leading-relaxed", style: { background: C.goldSoft, color: C.gold, fontWeight: 600 } }, t("cancelLocked"))) : (React.createElement(Btn, { variant: "danger", onClick: () => patientCancel(b) }, t("cancelThis"))))))))),
+            React.createElement("div", { className: "mt-5" },
+                React.createElement(Btn, { variant: "ghost", onClick: () => setPScreen("landing") }, t("backToTop")))));
+    }
+    // ======================================================
+    // ================= 管理側(日本語のみ) =================
+    // ======================================================
+    const [aTab, setATab] = useState("slots");
+    const [aMonthIdx, setAMonthIdx] = useState(0);
+    const [aSelDate, setASelDate] = useState(null);
+    const [bulkMode, setBulkMode] = useState(false);
+    const [bulkSel, setBulkSel] = useState([]);
+    const [aListMode, setAListMode] = useState("future");
+    const jp = (dateStr) => localDate(dateStr, "ja");
+    const langLabel = (code) => (LANGS.find((l) => l.code === code) || {}).label || code;
+    async function doLogin() {
+        setLoginBusy(true);
+        setLoginErr("");
+        const { error: err } = await sb.auth.signInWithPassword({
+            email: loginForm.email.trim(),
+            password: loginForm.password,
         });
-        return n;
-      });
-      flash(`${bulkSel.length}日分を${close ? "休診(終日停止)に設定" : "営業に戻"}しました`);
-      setBulkSel([]);
-      setBulkMode(false);
-    } catch (e) {
-      console.error(e);
-      setError("一括設定に失敗しました。もう一度お試しください。");
+        setLoginBusy(false);
+        if (err) {
+            setLoginErr("ログインに失敗しました。メールアドレスとパスワードをご確認ください。");
+            return;
+        }
+        setMode("admin");
     }
-  }
-
-  async function adminCancel(rec) {
-    if (!window.confirm(`${jp(rec.date)} ${rec.time} ${rec.name} 様の予約を取り消しますか?\n(患者様への連絡を忘れずに)`)) return;
-    try {
-      const { error: err } = await sb.from("bookings").delete().eq("date", rec.date);
-      if (err) throw err;
-      setBookings((prev) => {
-        const n = { ...prev };
-        delete n[rec.date];
-        return n;
-      });
-      flash(`${rec.name} 様の予約を取り消しました`);
-    } catch (e) {
-      console.error(e);
-      setError("キャンセルに失敗しました。");
+    async function doLogout() {
+        await sb.auth.signOut();
+        setMode("patient");
+        setPScreen("landing");
+        setLoginForm({ email: "", password: "" });
+        loadPublic();
     }
-  }
-
-  function AdminLogin() {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6" style={{ background: C.dark, fontFamily: fontBody }}>
-        <div className="w-full max-w-xs text-center">
-          <p className="text-xs tracking-widest mb-2" style={{ color: C.aqua, letterSpacing: "0.3em" }}>STAFF ONLY</p>
-          <h1 className="text-xl mb-8" style={{ fontFamily: fontDisplay, color: "#F2F8FA" }}>{CLINIC_NAME}<br />予約管理</h1>
-          <input
-            type="email"
-            value={loginForm.email}
-            onChange={(e) => { setLoginForm((p) => ({ ...p, email: e.target.value })); setLoginErr(""); }}
-            placeholder="メールアドレス"
-            className="w-full px-4 py-3.5 rounded-xl text-base outline-none mb-3"
-            style={{ background: "#153349", color: "#fff", border: `1.5px solid #2C4E63`, boxSizing: "border-box", fontFamily: fontBody }}
-          />
-          <input
-            type="password"
-            value={loginForm.password}
-            onChange={(e) => { setLoginForm((p) => ({ ...p, password: e.target.value })); setLoginErr(""); }}
-            onKeyDown={(e) => { if (e.key === "Enter") doLogin(); }}
-            placeholder="パスワード"
-            className="w-full px-4 py-3.5 rounded-xl text-base outline-none mb-3"
-            style={{ background: "#153349", color: "#fff", border: `1.5px solid ${loginErr ? "#E08A7E" : "#2C4E63"}`, boxSizing: "border-box", fontFamily: fontBody }}
-          />
-          {loginErr && <p className="text-xs mb-3" style={{ color: "#E08A7E" }}>{loginErr}</p>}
-          <button
-            onClick={doLogin}
-            disabled={loginBusy}
-            className="w-full py-3.5 rounded-xl text-sm active:opacity-70"
-            style={{ background: C.aqua, color: C.dark, fontWeight: 700, letterSpacing: "0.1em", border: "none", cursor: "pointer", opacity: loginBusy ? 0.5 : 1 }}>
-            {loginBusy ? "ログイン中…" : "ログイン"}
-          </button>
-          <button onClick={() => setMode("patient")}
-            className="mt-4 text-xs" style={{ color: "#7FA6B8", background: "none", border: "none", cursor: "pointer" }}>
-            ← 予約画面に戻る
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  function AdminDayPanel({ dateStr }) {
-    const booked = bookings[dateStr];
-    const closed = closedSlots[dateStr] || [];
-    return (
-      <div className="rounded-2xl p-4 mt-4" style={{ background: C.card, border: `1.5px solid ${C.primary}` }}>
-        <p className="text-base mb-3" style={{ fontFamily: fontDisplay, color: C.ink, fontWeight: 600 }}>{jp(dateStr)}</p>
-        {booked ? (
-          <div>
-            <div className="rounded-xl p-3 mb-3" style={{ background: C.goldSoft }}>
-              <p className="text-sm mb-1" style={{ color: C.ink, fontWeight: 700 }}>
-                {booked.time}〜 {booked.name} 様
-                {booked.lang && booked.lang !== "ja" && (
-                  <span className="ml-2 text-xs px-1.5 py-0.5 rounded" style={{ background: C.primarySoft, color: C.primary }}>{langLabel(booked.lang)}</span>
-                )}
-              </p>
-              <p className="text-xs" style={{ color: C.sub }}>
-                診察券: {booked.clinicId} / 携帯: {booked.phone}<br />予約番号: {booked.bookingNo}
-              </p>
-            </div>
-            <a href={gcalUrl({
-              date: booked.date, time: booked.time,
-              title: `【糸リフト】${booked.name} 様`,
-              details: `予約番号: ${booked.bookingNo}\n診察券番号: ${booked.clinicId}\n携帯: ${booked.phone}\n(${CLINIC_NAME} 予約システムより)`,
-            })} target="_blank" rel="noopener noreferrer" className="block mb-2" style={{ textDecoration: "none" }}>
-              <Btn onClick={() => {}}>📅 Googleカレンダーに追加</Btn>
-            </a>
-            <Btn variant="danger" onClick={() => adminCancel(booked)}>予約を取り消す</Btn>
-          </div>
-        ) : (
-          <div>
-            <div className="flex flex-col gap-2 mb-3">
-              {SLOT_TIMES.map((tt) => {
-                const isClosed = closed.includes(tt);
-                return (
-                  <div key={tt} className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: isClosed ? C.dangerSoft : C.primarySoft }}>
-                    <span className="text-sm" style={{ color: C.ink, fontWeight: 600 }}>{tt}〜 {isClosed ? "停止中" : "受付中"}</span>
-                    <Btn small variant={isClosed ? "primary" : "danger"} onClick={() => toggleSlot(dateStr, tt)}>
-                      {isClosed ? "受付再開" : "停止する"}
-                    </Btn>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex gap-2">
-              <div className="flex-1"><Btn variant="outline" onClick={() => setDayAll(dateStr, true)}>終日停止</Btn></div>
-              <div className="flex-1"><Btn variant="outline" onClick={() => setDayAll(dateStr, false)}>終日再開</Btn></div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  function AdminSlots() {
-    return (
-      <div>
-        <div className="rounded-xl px-3 py-2.5 mb-3 flex items-center justify-between gap-2"
-          style={{ background: bulkMode ? C.goldSoft : C.card, border: `1.5px solid ${bulkMode ? C.gold : C.line}` }}>
-          <span className="text-xs" style={{ color: bulkMode ? C.gold : C.sub, fontWeight: 600 }}>
-            {bulkMode ? `休診日をタップで選択(${bulkSel.length}日)` : "休診日のまとめて設定"}
-          </span>
-          <button
-            onClick={() => { setBulkMode(!bulkMode); setBulkSel([]); setASelDate(null); }}
-            className="text-xs px-3 py-1.5 rounded-lg shrink-0"
-            style={{
-              background: bulkMode ? "transparent" : C.primary,
-              color: bulkMode ? C.sub : "#fff",
-              border: bulkMode ? `1px solid ${C.line}` : "none",
-              fontWeight: 600, cursor: "pointer",
-            }}>
-            {bulkMode ? "やめる" : "開始"}
-          </button>
-        </div>
-
-        <MonthTabs monthIdx={aMonthIdx} onChange={(i) => { setAMonthIdx(i); setASelDate(null); }} l="ja" />
-
-        {renderCalendarGrid(aMonthIdx, (dateStr, d, dow) => {
-          const isPast = dateStr < today;
-          const isSun = dow === 0;
-          const booked = bookings[dateStr];
-          const closed = closedSlots[dateStr] || [];
-          const allClosed = SLOT_TIMES.every((tt) => closed.includes(tt));
-          const partClosed = !allClosed && closed.length > 0;
-          const isSel = aSelDate === dateStr;
-          const isBulkSel = bulkSel.includes(dateStr);
-          let mark = "○", markColor = C.primary;
-          if (isSun || isPast) { mark = "−"; markColor = "#B4C8D2"; }
-          else if (booked) { mark = "予"; markColor = C.gold; }
-          else if (allClosed) { mark = "×"; markColor = C.danger; }
-          else if (partClosed) { mark = "△"; markColor = C.gold; }
-          const disabled = isSun || isPast || (bulkMode && booked);
-          return (
-            <button key={dateStr} disabled={disabled}
-              onClick={() => {
-                if (bulkMode) {
-                  setBulkSel((prev) => prev.includes(dateStr) ? prev.filter((x) => x !== dateStr) : [...prev, dateStr]);
-                } else {
-                  setASelDate(isSel ? null : dateStr);
+    async function toggleSlot(dateStr, time) {
+        const cur = closedSlots[dateStr] || [];
+        const nowClosed = cur.includes(time);
+        try {
+            if (nowClosed) {
+                const { error: err } = await sb.from("closed_slots").delete().match({ date: dateStr, time });
+                if (err)
+                    throw err;
+            }
+            else {
+                const { error: err } = await sb.from("closed_slots").upsert({ date: dateStr, time });
+                if (err)
+                    throw err;
+            }
+            setClosedSlots((prev) => {
+                const n = { ...prev };
+                if (nowClosed) {
+                    n[dateStr] = (n[dateStr] || []).filter((tt) => tt !== time);
+                    if (n[dateStr].length === 0)
+                        delete n[dateStr];
                 }
-              }}
-              className="rounded-lg flex flex-col items-center justify-center py-1.5"
-              style={{
-                minHeight: "50px",
-                background: bulkMode ? (isBulkSel ? C.dangerSoft : "transparent") : (isSel ? C.primarySoft : booked ? C.goldSoft : "transparent"),
-                border: bulkMode ? (isBulkSel ? `1.5px solid ${C.danger}` : "1.5px solid transparent") : (isSel ? `1.5px solid ${C.primary}` : "1.5px solid transparent"),
-                opacity: bulkMode && booked ? 0.35 : 1,
-                cursor: disabled ? "default" : "pointer",
-              }}>
-              <span className="text-sm" style={{ color: isSun || isPast ? "#B4C8D2" : C.ink, fontWeight: 600 }}>{d}</span>
-              <span className="text-sm leading-none mt-0.5" style={{ color: markColor, fontWeight: 700 }}>{mark}</span>
-            </button>
-          );
-        }, "ja")}
-
-        <div className="flex gap-3 justify-center mt-2 text-xs flex-wrap" style={{ color: C.sub }}>
-          <span>○ 受付中</span><span style={{ color: C.gold }}>△ 一部停止</span>
-          <span style={{ color: C.danger }}>× 停止</span><span style={{ color: C.gold }}>予 予約あり</span>
-        </div>
-
-        {bulkMode && bulkSel.length > 0 && (
-          <div className="flex gap-2 mt-3">
-            <div className="flex-1"><Btn variant="danger" onClick={() => applyBulk(true)}>選択した{bulkSel.length}日を休診にする</Btn></div>
-            <div className="flex-1"><Btn variant="outline" onClick={() => applyBulk(false)}>営業に戻す</Btn></div>
-          </div>
-        )}
-
-        {!bulkMode && aSelDate && <AdminDayPanel dateStr={aSelDate} />}
-      </div>
-    );
-  }
-
-  function AdminBookings() {
-    const all = Object.values(bookings);
-    const futureList = all.filter((b) => b.date >= today).sort((a, b) => a.date.localeCompare(b.date));
-    const pastList = all.filter((b) => b.date < today).sort((a, b) => b.date.localeCompare(a.date));
-    const list = aListMode === "future" ? futureList : pastList;
-    const tomorrowList = futureList.filter((b) => b.date === tomorrow);
-    return (
-      <div>
-        <div className="rounded-2xl p-4 mb-4" style={{ background: C.dark }}>
-          <p className="text-xs tracking-widest mb-2" style={{ color: C.aqua, letterSpacing: "0.2em" }}>明日の予約 — 前日確認のお電話を</p>
-          {tomorrowList.length === 0 ? (
-            <p className="text-sm" style={{ color: "#7FA6B8" }}>明日の予約はありません</p>
-          ) : (
-            tomorrowList.map((b) => (
-              <div key={b.date}>
-                <p className="text-base" style={{ color: "#F2F8FA", fontWeight: 700 }}>{b.time}〜 {b.name} 様</p>
-                <p className="text-xs mt-0.5" style={{ color: "#7FA6B8" }}>📞 {b.phone} / 診察券 {b.clinicId}</p>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="flex rounded-xl overflow-hidden mb-3" style={{ border: `1.5px solid ${C.line}` }}>
-          {[["future", `今後の予約(${futureList.length})`], ["past", `過去の予約(${pastList.length})`]].map(([k, label]) => (
-            <button key={k} onClick={() => setAListMode(k)}
-              className="flex-1 py-2 text-sm"
-              style={{ fontWeight: 600, background: aListMode === k ? C.primary : C.card, color: aListMode === k ? "#fff" : C.sub, border: "none", cursor: "pointer" }}>
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {list.length === 0 ? (
-          <div className="rounded-2xl p-6 text-center" style={{ background: C.card, border: `1px solid ${C.line}` }}>
-            <p className="text-sm" style={{ color: C.sub }}>{aListMode === "future" ? "予約はまだありません" : "過去の予約はありません"}</p>
-          </div>
-        ) : (
-          list.map((b) => (
-            <div key={b.date} className="rounded-2xl p-4 mb-3"
-              style={{
-                background: C.card,
-                border: `1px solid ${aListMode === "future" && b.date === tomorrow ? C.gold : C.line}`,
-                opacity: aListMode === "past" ? 0.85 : 1,
-              }}>
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <p className="text-base" style={{ fontFamily: fontDisplay, color: C.ink, fontWeight: 600 }}>{jp(b.date)} {b.time}〜</p>
-                  <p className="text-sm mt-0.5" style={{ color: C.ink, fontWeight: 700 }}>
-                    {b.name} 様
-                    {b.lang && b.lang !== "ja" && (
-                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded" style={{ background: C.primarySoft, color: C.primary }}>{langLabel(b.lang)}</span>
-                    )}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: C.sub }}>診察券 {b.clinicId} / 📞 {b.phone} / No. {b.bookingNo}</p>
-                </div>
-                {aListMode === "future" && b.date === tomorrow && (
-                  <span className="text-xs px-2 py-1 rounded-full shrink-0" style={{ background: C.goldSoft, color: C.gold, fontWeight: 700 }}>明日</span>
-                )}
-                {aListMode === "past" && (
-                  <span className="text-xs px-2 py-1 rounded-full shrink-0" style={{ background: C.bgAdmin, color: C.sub, fontWeight: 600 }}>済</span>
-                )}
-              </div>
-              {aListMode === "future" && (
-                <div className="flex gap-2">
-                  <a href={gcalUrl({
-                    date: b.date, time: b.time,
-                    title: `【糸リフト】${b.name} 様`,
-                    details: `予約番号: ${b.bookingNo}\n診察券番号: ${b.clinicId}\n携帯: ${b.phone}\n(${CLINIC_NAME} 予約システムより)`,
-                  })} target="_blank" rel="noopener noreferrer" className="flex-1" style={{ textDecoration: "none" }}>
-                    <Btn onClick={() => {}}>📅 カレンダー追加</Btn>
-                  </a>
-                  <div style={{ width: "110px" }}>
-                    <Btn variant="danger" onClick={() => adminCancel(b)}>取り消す</Btn>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    );
-  }
-
-  // ======================================================
-  // ================= レイアウト =================
-  // ======================================================
-  if (mode === "login") {
-    if (session) { setMode("admin"); return null; }
-    return AdminLogin();
-  }
-
-  if (mode === "admin") {
-    if (!session) { setMode("login"); return null; }
-    return (
-      <div className="min-h-screen" style={{ background: C.bgAdmin, fontFamily: fontBody }}>
-        <header className="px-4 pt-5 pb-3" style={{ background: C.dark }}>
-          <div className="max-w-md mx-auto flex items-center justify-between">
-            <div>
-              <p className="text-xs" style={{ color: C.aqua, letterSpacing: "0.2em" }}>予約管理</p>
-              <h1 className="text-lg" style={{ fontFamily: fontDisplay, color: "#F2F8FA", margin: 0 }}>{CLINIC_NAME}</h1>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={loadAdmin} className="text-xs px-3 py-2 rounded-lg active:opacity-60"
-                style={{ background: "#1A3A50", color: "#C2D6E0", fontWeight: 600, border: "none", cursor: "pointer" }}>
-                ↻ 更新
-              </button>
-              <button onClick={doLogout}
-                className="text-xs px-3 py-2 rounded-lg active:opacity-60"
-                style={{ background: "#1A3A50", color: "#C2D6E0", fontWeight: 600, border: "none", cursor: "pointer" }}>
-                ログアウト
-              </button>
-            </div>
-          </div>
-          <div className="max-w-md mx-auto flex gap-1 mt-3">
-            {[["slots", "枠の管理"], ["bookings", "予約一覧"]].map(([k, label]) => (
-              <button key={k} onClick={() => setATab(k)}
-                className="flex-1 py-2.5 text-sm rounded-t-xl"
-                style={{ fontWeight: 600, background: aTab === k ? C.bgAdmin : "transparent", color: aTab === k ? C.primary : "#7FA6B8", border: "none", cursor: "pointer" }}>
-                {label}
-              </button>
-            ))}
-          </div>
-        </header>
-        <main className="max-w-md mx-auto px-4 py-4 pb-12">
-          {notice && (
-            <div className="rounded-xl px-4 py-2.5 mb-3 text-sm" style={{ background: C.primarySoft, color: C.primary, fontWeight: 600 }}>✓ {notice}</div>
-          )}
-          {error && (
-            <div className="rounded-xl px-4 py-2.5 mb-3 text-sm" style={{ background: C.dangerSoft, color: C.danger, fontWeight: 600 }}>{error}</div>
-          )}
-          {loading ? (
-            <p className="text-center py-10 text-sm" style={{ color: C.sub }}>読み込んでいます…</p>
-          ) : aTab === "slots" ? AdminSlots() : AdminBookings()}
-        </main>
-      </div>
-    );
-  }
-
-  if (pScreen === "landing") return Landing();
-
-  return (
-    <div className="min-h-screen flex flex-col" style={{ background: C.bg, fontFamily: fontBody }}>
-      <header className="text-center pt-7 pb-4 px-4">
-        <p className="text-xs tracking-widest mb-1" style={{ color: C.gold, letterSpacing: "0.3em" }}>{t("webReserve")}</p>
-        <h1 className="text-2xl" style={{ fontFamily: fontDisplay, color: C.ink, fontWeight: 600, margin: 0 }}>{CLINIC_NAME}</h1>
-        <p className="text-sm mt-1" style={{ color: C.sub }}>{t("treatment")}</p>
-        <div className="w-10 h-px mx-auto mt-3" style={{ background: C.gold }} />
-      </header>
-      <main className="max-w-md mx-auto px-4 pb-8 w-full flex-1" style={{ boxSizing: "border-box" }}>
-        {loading ? (
-          <p className="text-center py-10 text-sm" style={{ color: C.sub }}>{t("loadingAvail")}</p>
-        ) : (
-          <React.Fragment>
-            {error && pScreen === "calendar" && (
-              <p className="text-sm text-center mb-3" style={{ color: C.danger }}>{error}</p>
-            )}
-            {pScreen === "calendar" && PatientCalendar()}
-            {pScreen === "time" && PatientTime()}
-            {pScreen === "form" && PatientForm()}
-            {pScreen === "confirm" && PatientConfirm()}
-            {pScreen === "done" && PatientDone()}
-            {pScreen === "lookup" && PatientLookup()}
-          </React.Fragment>
-        )}
-      </main>
-    </div>
-  );
+                else {
+                    n[dateStr] = [...(n[dateStr] || []), time];
+                }
+                return n;
+            });
+            flash(`${jp(dateStr)} ${time} を${nowClosed ? "受付再開" : "停止"}しました`);
+        }
+        catch (e) {
+            console.error(e);
+            setError("枠の更新に失敗しました。もう一度お試しください。");
+        }
+    }
+    async function setDayAll(dateStr, close) {
+        try {
+            if (close) {
+                const { error: err } = await sb.from("closed_slots").upsert(SLOT_TIMES.map((tt) => ({ date: dateStr, time: tt })));
+                if (err)
+                    throw err;
+            }
+            else {
+                const { error: err } = await sb.from("closed_slots").delete().eq("date", dateStr);
+                if (err)
+                    throw err;
+            }
+            setClosedSlots((prev) => {
+                const n = { ...prev };
+                if (close)
+                    n[dateStr] = [...SLOT_TIMES];
+                else
+                    delete n[dateStr];
+                return n;
+            });
+            flash(`${jp(dateStr)} の受付を${close ? "全て停止" : "全て再開"}しました`);
+        }
+        catch (e) {
+            console.error(e);
+            setError("枠の更新に失敗しました。もう一度お試しください。");
+        }
+    }
+    async function applyBulk(close) {
+        if (bulkSel.length === 0)
+            return;
+        try {
+            if (close) {
+                const rows = [];
+                bulkSel.forEach((d) => SLOT_TIMES.forEach((tt) => rows.push({ date: d, time: tt })));
+                const { error: err } = await sb.from("closed_slots").upsert(rows);
+                if (err)
+                    throw err;
+            }
+            else {
+                const { error: err } = await sb.from("closed_slots").delete().in("date", bulkSel);
+                if (err)
+                    throw err;
+            }
+            setClosedSlots((prev) => {
+                const n = { ...prev };
+                bulkSel.forEach((d) => {
+                    if (close)
+                        n[d] = [...SLOT_TIMES];
+                    else
+                        delete n[d];
+                });
+                return n;
+            });
+            flash(`${bulkSel.length}日分を${close ? "休診(終日停止)に設定" : "営業に戻"}しました`);
+            setBulkSel([]);
+            setBulkMode(false);
+        }
+        catch (e) {
+            console.error(e);
+            setError("一括設定に失敗しました。もう一度お試しください。");
+        }
+    }
+    async function adminCancel(rec) {
+        if (!window.confirm(`${jp(rec.date)} ${rec.time} ${rec.name} 様の予約を取り消しますか?\n(患者様への連絡を忘れずに)`))
+            return;
+        try {
+            const { error: err } = await sb.from("bookings").delete().eq("date", rec.date);
+            if (err)
+                throw err;
+            setBookings((prev) => {
+                const n = { ...prev };
+                delete n[rec.date];
+                return n;
+            });
+            flash(`${rec.name} 様の予約を取り消しました`);
+        }
+        catch (e) {
+            console.error(e);
+            setError("キャンセルに失敗しました。");
+        }
+    }
+    function AdminLogin() {
+        return (React.createElement("div", { className: "min-h-screen flex items-center justify-center px-6", style: { background: C.dark, fontFamily: fontBody } },
+            React.createElement("div", { className: "w-full max-w-xs text-center" },
+                React.createElement("p", { className: "text-xs tracking-widest mb-2", style: { color: C.aqua, letterSpacing: "0.3em" } }, "STAFF ONLY"),
+                React.createElement("h1", { className: "text-xl mb-8", style: { fontFamily: fontDisplay, color: "#F2F8FA" } },
+                    CLINIC_NAME,
+                    React.createElement("br", null),
+                    "\u4E88\u7D04\u7BA1\u7406"),
+                React.createElement("input", { type: "email", value: loginForm.email, onChange: (e) => { setLoginForm((p) => ({ ...p, email: e.target.value })); setLoginErr(""); }, placeholder: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9", className: "w-full px-4 py-3.5 rounded-xl text-base outline-none mb-3", style: { background: "#153349", color: "#fff", border: `1.5px solid #2C4E63`, boxSizing: "border-box", fontFamily: fontBody } }),
+                React.createElement("input", { type: "password", value: loginForm.password, onChange: (e) => { setLoginForm((p) => ({ ...p, password: e.target.value })); setLoginErr(""); }, onKeyDown: (e) => { if (e.key === "Enter")
+                        doLogin(); }, placeholder: "\u30D1\u30B9\u30EF\u30FC\u30C9", className: "w-full px-4 py-3.5 rounded-xl text-base outline-none mb-3", style: { background: "#153349", color: "#fff", border: `1.5px solid ${loginErr ? "#E08A7E" : "#2C4E63"}`, boxSizing: "border-box", fontFamily: fontBody } }),
+                loginErr && React.createElement("p", { className: "text-xs mb-3", style: { color: "#E08A7E" } }, loginErr),
+                React.createElement("button", { onClick: doLogin, disabled: loginBusy, className: "w-full py-3.5 rounded-xl text-sm active:opacity-70", style: { background: C.aqua, color: C.dark, fontWeight: 700, letterSpacing: "0.1em", border: "none", cursor: "pointer", opacity: loginBusy ? 0.5 : 1 } }, loginBusy ? "ログイン中…" : "ログイン"),
+                React.createElement("button", { onClick: () => setMode("patient"), className: "mt-4 text-xs", style: { color: "#7FA6B8", background: "none", border: "none", cursor: "pointer" } }, "\u2190 \u4E88\u7D04\u753B\u9762\u306B\u623B\u308B"))));
+    }
+    function AdminDayPanel({ dateStr }) {
+        const booked = bookings[dateStr];
+        const closed = closedSlots[dateStr] || [];
+        return (React.createElement("div", { className: "rounded-2xl p-4 mt-4", style: { background: C.card, border: `1.5px solid ${C.primary}` } },
+            React.createElement("p", { className: "text-base mb-3", style: { fontFamily: fontDisplay, color: C.ink, fontWeight: 600 } }, jp(dateStr)),
+            booked ? (React.createElement("div", null,
+                React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: C.goldSoft } },
+                    React.createElement("p", { className: "text-sm mb-1", style: { color: C.ink, fontWeight: 700 } },
+                        booked.time,
+                        "\u301C ",
+                        booked.name,
+                        " \u69D8",
+                        booked.lang && booked.lang !== "ja" && (React.createElement("span", { className: "ml-2 text-xs px-1.5 py-0.5 rounded", style: { background: C.primarySoft, color: C.primary } }, langLabel(booked.lang)))),
+                    React.createElement("p", { className: "text-xs", style: { color: C.sub } },
+                        "\u8A3A\u5BDF\u5238: ",
+                        booked.clinicId,
+                        " / \u643A\u5E2F: ",
+                        booked.phone,
+                        React.createElement("br", null),
+                        "\u4E88\u7D04\u756A\u53F7: ",
+                        booked.bookingNo)),
+                React.createElement("a", { href: gcalUrl({
+                        date: booked.date, time: booked.time,
+                        title: `【糸リフト】${booked.name} 様`,
+                        details: `予約番号: ${booked.bookingNo}\n診察券番号: ${booked.clinicId}\n携帯: ${booked.phone}\n(${CLINIC_NAME} 予約システムより)`,
+                    }), target: "_blank", rel: "noopener noreferrer", className: "block mb-2", style: { textDecoration: "none" } },
+                    React.createElement(Btn, { onClick: () => { } }, "\uD83D\uDCC5 Google\u30AB\u30EC\u30F3\u30C0\u30FC\u306B\u8FFD\u52A0")),
+                React.createElement(Btn, { variant: "danger", onClick: () => adminCancel(booked) }, "\u4E88\u7D04\u3092\u53D6\u308A\u6D88\u3059"))) : (React.createElement("div", null,
+                React.createElement("div", { className: "flex flex-col gap-2 mb-3" }, SLOT_TIMES.map((tt) => {
+                    const isClosed = closed.includes(tt);
+                    return (React.createElement("div", { key: tt, className: "flex items-center justify-between rounded-xl px-4 py-3", style: { background: isClosed ? C.dangerSoft : C.primarySoft } },
+                        React.createElement("span", { className: "text-sm", style: { color: C.ink, fontWeight: 600 } },
+                            tt,
+                            "\u301C ",
+                            isClosed ? "停止中" : "受付中"),
+                        React.createElement(Btn, { small: true, variant: isClosed ? "primary" : "danger", onClick: () => toggleSlot(dateStr, tt) }, isClosed ? "受付再開" : "停止する")));
+                })),
+                React.createElement("div", { className: "flex gap-2" },
+                    React.createElement("div", { className: "flex-1" },
+                        React.createElement(Btn, { variant: "outline", onClick: () => setDayAll(dateStr, true) }, "\u7D42\u65E5\u505C\u6B62")),
+                    React.createElement("div", { className: "flex-1" },
+                        React.createElement(Btn, { variant: "outline", onClick: () => setDayAll(dateStr, false) }, "\u7D42\u65E5\u518D\u958B")))))));
+    }
+    function AdminSlots() {
+        return (React.createElement("div", null,
+            React.createElement("div", { className: "rounded-xl px-3 py-2.5 mb-3 flex items-center justify-between gap-2", style: { background: bulkMode ? C.goldSoft : C.card, border: `1.5px solid ${bulkMode ? C.gold : C.line}` } },
+                React.createElement("span", { className: "text-xs", style: { color: bulkMode ? C.gold : C.sub, fontWeight: 600 } }, bulkMode ? `休診日をタップで選択(${bulkSel.length}日)` : "休診日のまとめて設定"),
+                React.createElement("button", { onClick: () => { setBulkMode(!bulkMode); setBulkSel([]); setASelDate(null); }, className: "text-xs px-3 py-1.5 rounded-lg shrink-0", style: {
+                        background: bulkMode ? "transparent" : C.primary,
+                        color: bulkMode ? C.sub : "#fff",
+                        border: bulkMode ? `1px solid ${C.line}` : "none",
+                        fontWeight: 600, cursor: "pointer",
+                    } }, bulkMode ? "やめる" : "開始")),
+            React.createElement(MonthTabs, { monthIdx: aMonthIdx, onChange: (i) => { setAMonthIdx(i); setASelDate(null); }, l: "ja" }),
+            renderCalendarGrid(aMonthIdx, (dateStr, d, dow) => {
+                const isPast = dateStr < today;
+                const isSun = dow === 0;
+                const booked = bookings[dateStr];
+                const closed = closedSlots[dateStr] || [];
+                const allClosed = SLOT_TIMES.every((tt) => closed.includes(tt));
+                const partClosed = !allClosed && closed.length > 0;
+                const isSel = aSelDate === dateStr;
+                const isBulkSel = bulkSel.includes(dateStr);
+                let mark = "○", markColor = C.primary;
+                if (isSun || isPast) {
+                    mark = "−";
+                    markColor = "#B4C8D2";
+                }
+                else if (booked) {
+                    mark = "予";
+                    markColor = C.gold;
+                }
+                else if (allClosed) {
+                    mark = "×";
+                    markColor = C.danger;
+                }
+                else if (partClosed) {
+                    mark = "△";
+                    markColor = C.gold;
+                }
+                const disabled = isSun || isPast || (bulkMode && booked);
+                return (React.createElement("button", { key: dateStr, disabled: disabled, onClick: () => {
+                        if (bulkMode) {
+                            setBulkSel((prev) => prev.includes(dateStr) ? prev.filter((x) => x !== dateStr) : [...prev, dateStr]);
+                        }
+                        else {
+                            setASelDate(isSel ? null : dateStr);
+                        }
+                    }, className: "rounded-lg flex flex-col items-center justify-center py-1.5", style: {
+                        minHeight: "50px",
+                        background: bulkMode ? (isBulkSel ? C.dangerSoft : "transparent") : (isSel ? C.primarySoft : booked ? C.goldSoft : "transparent"),
+                        border: bulkMode ? (isBulkSel ? `1.5px solid ${C.danger}` : "1.5px solid transparent") : (isSel ? `1.5px solid ${C.primary}` : "1.5px solid transparent"),
+                        opacity: bulkMode && booked ? 0.35 : 1,
+                        cursor: disabled ? "default" : "pointer",
+                    } },
+                    React.createElement("span", { className: "text-sm", style: { color: isSun || isPast ? "#B4C8D2" : C.ink, fontWeight: 600 } }, d),
+                    React.createElement("span", { className: "text-sm leading-none mt-0.5", style: { color: markColor, fontWeight: 700 } }, mark)));
+            }, "ja"),
+            React.createElement("div", { className: "flex gap-3 justify-center mt-2 text-xs flex-wrap", style: { color: C.sub } },
+                React.createElement("span", null, "\u25CB \u53D7\u4ED8\u4E2D"),
+                React.createElement("span", { style: { color: C.gold } }, "\u25B3 \u4E00\u90E8\u505C\u6B62"),
+                React.createElement("span", { style: { color: C.danger } }, "\u00D7 \u505C\u6B62"),
+                React.createElement("span", { style: { color: C.gold } }, "\u4E88 \u4E88\u7D04\u3042\u308A")),
+            bulkMode && bulkSel.length > 0 && (React.createElement("div", { className: "flex gap-2 mt-3" },
+                React.createElement("div", { className: "flex-1" },
+                    React.createElement(Btn, { variant: "danger", onClick: () => applyBulk(true) },
+                        "\u9078\u629E\u3057\u305F",
+                        bulkSel.length,
+                        "\u65E5\u3092\u4F11\u8A3A\u306B\u3059\u308B")),
+                React.createElement("div", { className: "flex-1" },
+                    React.createElement(Btn, { variant: "outline", onClick: () => applyBulk(false) }, "\u55B6\u696D\u306B\u623B\u3059")))),
+            !bulkMode && aSelDate && React.createElement(AdminDayPanel, { dateStr: aSelDate })));
+    }
+    function AdminBookings() {
+        const all = Object.values(bookings);
+        const futureList = all.filter((b) => b.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+        const pastList = all.filter((b) => b.date < today).sort((a, b) => b.date.localeCompare(a.date));
+        const list = aListMode === "future" ? futureList : pastList;
+        const tomorrowList = futureList.filter((b) => b.date === tomorrow);
+        return (React.createElement("div", null,
+            React.createElement("div", { className: "rounded-2xl p-4 mb-4", style: { background: C.dark } },
+                React.createElement("p", { className: "text-xs tracking-widest mb-2", style: { color: C.aqua, letterSpacing: "0.2em" } }, "\u660E\u65E5\u306E\u4E88\u7D04 \u2014 \u524D\u65E5\u78BA\u8A8D\u306E\u304A\u96FB\u8A71\u3092"),
+                tomorrowList.length === 0 ? (React.createElement("p", { className: "text-sm", style: { color: "#7FA6B8" } }, "\u660E\u65E5\u306E\u4E88\u7D04\u306F\u3042\u308A\u307E\u305B\u3093")) : (tomorrowList.map((b) => (React.createElement("div", { key: b.date },
+                    React.createElement("p", { className: "text-base", style: { color: "#F2F8FA", fontWeight: 700 } },
+                        b.time,
+                        "\u301C ",
+                        b.name,
+                        " \u69D8"),
+                    React.createElement("p", { className: "text-xs mt-0.5", style: { color: "#7FA6B8" } },
+                        "\uD83D\uDCDE ",
+                        b.phone,
+                        " / \u8A3A\u5BDF\u5238 ",
+                        b.clinicId)))))),
+            React.createElement("div", { className: "flex rounded-xl overflow-hidden mb-3", style: { border: `1.5px solid ${C.line}` } }, [["future", `今後の予約(${futureList.length})`], ["past", `過去の予約(${pastList.length})`]].map(([k, label]) => (React.createElement("button", { key: k, onClick: () => setAListMode(k), className: "flex-1 py-2 text-sm", style: { fontWeight: 600, background: aListMode === k ? C.primary : C.card, color: aListMode === k ? "#fff" : C.sub, border: "none", cursor: "pointer" } }, label)))),
+            list.length === 0 ? (React.createElement("div", { className: "rounded-2xl p-6 text-center", style: { background: C.card, border: `1px solid ${C.line}` } },
+                React.createElement("p", { className: "text-sm", style: { color: C.sub } }, aListMode === "future" ? "予約はまだありません" : "過去の予約はありません"))) : (list.map((b) => (React.createElement("div", { key: b.date, className: "rounded-2xl p-4 mb-3", style: {
+                    background: C.card,
+                    border: `1px solid ${aListMode === "future" && b.date === tomorrow ? C.gold : C.line}`,
+                    opacity: aListMode === "past" ? 0.85 : 1,
+                } },
+                React.createElement("div", { className: "flex items-start justify-between mb-2" },
+                    React.createElement("div", null,
+                        React.createElement("p", { className: "text-base", style: { fontFamily: fontDisplay, color: C.ink, fontWeight: 600 } },
+                            jp(b.date),
+                            " ",
+                            b.time,
+                            "\u301C"),
+                        React.createElement("p", { className: "text-sm mt-0.5", style: { color: C.ink, fontWeight: 700 } },
+                            b.name,
+                            " \u69D8",
+                            b.lang && b.lang !== "ja" && (React.createElement("span", { className: "ml-2 text-xs px-1.5 py-0.5 rounded", style: { background: C.primarySoft, color: C.primary } }, langLabel(b.lang)))),
+                        React.createElement("p", { className: "text-xs mt-0.5", style: { color: C.sub } },
+                            "\u8A3A\u5BDF\u5238 ",
+                            b.clinicId,
+                            " / \uD83D\uDCDE ",
+                            b.phone,
+                            " / No. ",
+                            b.bookingNo)),
+                    aListMode === "future" && b.date === tomorrow && (React.createElement("span", { className: "text-xs px-2 py-1 rounded-full shrink-0", style: { background: C.goldSoft, color: C.gold, fontWeight: 700 } }, "\u660E\u65E5")),
+                    aListMode === "past" && (React.createElement("span", { className: "text-xs px-2 py-1 rounded-full shrink-0", style: { background: C.bgAdmin, color: C.sub, fontWeight: 600 } }, "\u6E08"))),
+                aListMode === "future" && (React.createElement("div", { className: "flex gap-2" },
+                    React.createElement("a", { href: gcalUrl({
+                            date: b.date, time: b.time,
+                            title: `【糸リフト】${b.name} 様`,
+                            details: `予約番号: ${b.bookingNo}\n診察券番号: ${b.clinicId}\n携帯: ${b.phone}\n(${CLINIC_NAME} 予約システムより)`,
+                        }), target: "_blank", rel: "noopener noreferrer", className: "flex-1", style: { textDecoration: "none" } },
+                        React.createElement(Btn, { onClick: () => { } }, "\uD83D\uDCC5 \u30AB\u30EC\u30F3\u30C0\u30FC\u8FFD\u52A0")),
+                    React.createElement("div", { style: { width: "110px" } },
+                        React.createElement(Btn, { variant: "danger", onClick: () => adminCancel(b) }, "\u53D6\u308A\u6D88\u3059"))))))))));
+    }
+    // ======================================================
+    // ================= レイアウト =================
+    // ======================================================
+    if (mode === "login") {
+        if (session) {
+            setMode("admin");
+            return null;
+        }
+        return AdminLogin();
+    }
+    if (mode === "admin") {
+        if (!session) {
+            setMode("login");
+            return null;
+        }
+        return (React.createElement("div", { className: "min-h-screen", style: { background: C.bgAdmin, fontFamily: fontBody } },
+            React.createElement("header", { className: "px-4 pt-5 pb-3", style: { background: C.dark } },
+                React.createElement("div", { className: "max-w-md mx-auto flex items-center justify-between" },
+                    React.createElement("div", null,
+                        React.createElement("p", { className: "text-xs", style: { color: C.aqua, letterSpacing: "0.2em" } }, "\u4E88\u7D04\u7BA1\u7406"),
+                        React.createElement("h1", { className: "text-lg", style: { fontFamily: fontDisplay, color: "#F2F8FA", margin: 0 } }, CLINIC_NAME)),
+                    React.createElement("div", { className: "flex gap-2" },
+                        React.createElement("button", { onClick: loadAdmin, className: "text-xs px-3 py-2 rounded-lg active:opacity-60", style: { background: "#1A3A50", color: "#C2D6E0", fontWeight: 600, border: "none", cursor: "pointer" } }, "\u21BB \u66F4\u65B0"),
+                        React.createElement("button", { onClick: doLogout, className: "text-xs px-3 py-2 rounded-lg active:opacity-60", style: { background: "#1A3A50", color: "#C2D6E0", fontWeight: 600, border: "none", cursor: "pointer" } }, "\u30ED\u30B0\u30A2\u30A6\u30C8"))),
+                React.createElement("div", { className: "max-w-md mx-auto flex gap-1 mt-3" }, [["slots", "枠の管理"], ["bookings", "予約一覧"]].map(([k, label]) => (React.createElement("button", { key: k, onClick: () => setATab(k), className: "flex-1 py-2.5 text-sm rounded-t-xl", style: { fontWeight: 600, background: aTab === k ? C.bgAdmin : "transparent", color: aTab === k ? C.primary : "#7FA6B8", border: "none", cursor: "pointer" } }, label))))),
+            React.createElement("main", { className: "max-w-md mx-auto px-4 py-4 pb-12" },
+                notice && (React.createElement("div", { className: "rounded-xl px-4 py-2.5 mb-3 text-sm", style: { background: C.primarySoft, color: C.primary, fontWeight: 600 } },
+                    "\u2713 ",
+                    notice)),
+                error && (React.createElement("div", { className: "rounded-xl px-4 py-2.5 mb-3 text-sm", style: { background: C.dangerSoft, color: C.danger, fontWeight: 600 } }, error)),
+                loading ? (React.createElement("p", { className: "text-center py-10 text-sm", style: { color: C.sub } }, "\u8AAD\u307F\u8FBC\u3093\u3067\u3044\u307E\u3059\u2026")) : aTab === "slots" ? AdminSlots() : AdminBookings())));
+    }
+    if (pScreen === "landing")
+        return Landing();
+    return (React.createElement("div", { className: "min-h-screen flex flex-col", style: { background: C.bg, fontFamily: fontBody } },
+        React.createElement("header", { className: "text-center pt-7 pb-4 px-4" },
+            React.createElement("p", { className: "text-xs tracking-widest mb-1", style: { color: C.gold, letterSpacing: "0.3em" } }, t("webReserve")),
+            React.createElement("h1", { className: "text-2xl", style: { fontFamily: fontDisplay, color: C.ink, fontWeight: 600, margin: 0 } }, CLINIC_NAME),
+            React.createElement("p", { className: "text-sm mt-1", style: { color: C.sub } }, t("treatment")),
+            React.createElement("div", { className: "w-10 h-px mx-auto mt-3", style: { background: C.gold } })),
+        React.createElement("main", { className: "max-w-md mx-auto px-4 pb-8 w-full flex-1", style: { boxSizing: "border-box" } }, loading ? (React.createElement("p", { className: "text-center py-10 text-sm", style: { color: C.sub } }, t("loadingAvail"))) : (React.createElement(React.Fragment, null,
+            error && pScreen === "calendar" && (React.createElement("p", { className: "text-sm text-center mb-3", style: { color: C.danger } }, error)),
+            pScreen === "calendar" && PatientCalendar(),
+            pScreen === "time" && PatientTime(),
+            pScreen === "form" && PatientForm(),
+            pScreen === "confirm" && PatientConfirm(),
+            pScreen === "done" && PatientDone(),
+            pScreen === "lookup" && PatientLookup())))));
 }
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
 </body>
 </html>
